@@ -11,6 +11,7 @@ import (
 var alertasDB []models.AlertaEmergencia
 var alertaID int = 0
 
+// CreateAlerta registra una nueva emergencia en la memoria del sistema
 func CreateAlerta(w http.ResponseWriter, r *http.Request) {
 	var nueva models.AlertaEmergencia
 	if err := json.NewDecoder(r.Body).Decode(&nueva); err != nil {

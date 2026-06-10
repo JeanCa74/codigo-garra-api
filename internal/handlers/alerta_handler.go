@@ -33,3 +33,14 @@ func GetAlertas(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(alertasDB)
 }
+func GetAlerta(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	for _, a := range alertasDB {
+		if a.ID == id {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(a)
+			return
+		}
+	}
+	http.Error(w, "No encontrado", http.StatusNotFound)
+}

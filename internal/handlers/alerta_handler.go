@@ -45,3 +45,20 @@ func GetAlerta(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Error(w, "Alerta no encontrada en el sistema", http.StatusNotFound)
 }
+func UpdateAlerta(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	var actualizacion models.AlertaEmergencia
+	json.NewDecoder(r.Body).Decode(&actualizacion)
+
+	for i, a := range alertasDB {
+		if a.ID == id {
+			alertasDB[i].Gravedad = actualizacion.Gravedad
+			alertasDB[i].Requerimiento = actualizacion.Requerimiento
+			alertasDB[i].Estado = actualizacion.Estado
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(alertasDB[i])
+			return
+		}
+	}
+	http.Error(w, "Alerta no encontrada", http.StatusNotFound)
+}

@@ -62,3 +62,14 @@ func UpdateAlerta(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Error(w, "Alerta no encontrada", http.StatusNotFound)
 }
+func DeleteAlerta(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	for i, a := range alertasDB {
+		if a.ID == id {
+			alertasDB = append(alertasDB[:i], alertasDB[i+1:]...)
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+	}
+	http.Error(w, "Alerta no encontrada para eliminar", http.StatusNotFound)
+}

@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"net/http"
-	"strconv"
 	"github.com/JeanCa74/codigo-garra-api/internal/models"
 	"github.com/go-chi/chi/v5"
+	"net/http"
+	"strconv"
 )
 
 var alertasDB []models.AlertaEmergencia

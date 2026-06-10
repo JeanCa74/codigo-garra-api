@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"github.com/go-chi/chi/v5"
 	"github.com/JeanCa74/codigo-garra-api/internal/handlers"
+	"github.com/go-chi/chi/v5"
+	"net/http"
 )
 
 func main() {

@@ -42,5 +42,5 @@ func GetAlerta(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	http.Error(w, "No encontrado", http.StatusNotFound)
+	http.Error(w, "Alerta no encontrada en el sistema", http.StatusNotFound)
 }

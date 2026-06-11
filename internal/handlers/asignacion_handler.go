@@ -40,5 +40,5 @@ func GetAsignacion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	http.Error(w, "No encontrado", http.StatusNotFound)
+	http.Error(w, "Match de emergencia no encontrado", http.StatusNotFound)
 }

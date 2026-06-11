@@ -23,3 +23,8 @@ func CreateAsignacion(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(nueva)
 }
+
+func GetAsignaciones(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(asignacionesDB)
+}

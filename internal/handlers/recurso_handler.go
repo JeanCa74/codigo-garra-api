@@ -39,3 +39,18 @@ return
 }
 http.Error(w, "Recurso clinico no hallado en la base", http.StatusNotFound)
 }
+
+func UpdateRecurso(w http.ResponseWriter, r *http.Request) {
+    id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+    for i, rec := range recursosDB {
+        if rec.ID == id {
+            var actualizado models.RecursoClinico
+            json.NewDecoder(r.Body).Decode(&actualizado)
+            actualizado.ID = id
+            recursosDB[i] = actualizado
+            json.NewEncoder(w).Encode(actualizado)
+            return
+        }
+    }
+    http.Error(w, "Recurso no encontrado", http.StatusNotFound)
+}

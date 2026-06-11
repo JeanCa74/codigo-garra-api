@@ -35,5 +35,5 @@ json.NewEncoder(w).Encode(rec)
 return
 }
 }
-http.Error(w, "No encontrado", http.StatusNotFound)
+http.Error(w, "Recurso clinico no hallado en la base", http.StatusNotFound)
 }

@@ -44,3 +44,18 @@ func GetAsignacion(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Error(w, "Match de emergencia no encontrado", http.StatusNotFound)
 }
+
+func UpdateAsignacion(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	var actualizacion models.AsignacionTriage
+	json.NewDecoder(r.Body).Decode(&actualizacion)
+	for i, asig := range asignacionesDB {
+		if asig.ID == id {
+			asignacionesDB[i].EstadoConfirmacion = actualizacion.EstadoConfirmacion
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(asignacionesDB[i])
+			return
+		}
+	}
+	http.Error(w, "Match no encontrado", http.StatusNotFound)
+}

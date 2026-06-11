@@ -59,3 +59,15 @@ func UpdateAsignacion(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Error(w, "Match no encontrado", http.StatusNotFound)
 }
+
+func DeleteAsignacion(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	for i, asig := range asignacionesDB {
+		if asig.ID == id {
+			asignacionesDB = append(asignacionesDB[:i], asignacionesDB[i+1:]...)
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+	}
+	http.Error(w, "Match no encontrado", http.StatusNotFound)
+}

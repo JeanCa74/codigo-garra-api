@@ -20,3 +20,8 @@ recursosDB = append(recursosDB, nuevo)
 w.WriteHeader(http.StatusCreated)
 json.NewEncoder(w).Encode(nuevo)
 }
+
+func GetRecursos(w http.ResponseWriter, r *http.Request) {
+w.Header().Set("Content-Type", "application/json")
+json.NewEncoder(w).Encode(recursosDB)
+}

@@ -1,4 +1,5 @@
 package models
+
 type RecursoClinico struct {
 	ID             int    `json:"id"`
 	ClinicaID      int    `json:"clinica_id"`

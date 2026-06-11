@@ -54,3 +54,16 @@ func UpdateRecurso(w http.ResponseWriter, r *http.Request) {
     }
     http.Error(w, "Recurso no encontrado", http.StatusNotFound)
 }
+
+func DeleteRecurso(w http.ResponseWriter, r *http.Request) {
+    id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+    for i, rec := range recursosDB {
+        if rec.ID == id {
+            recursosDB = append(recursosDB[:i], recursosDB[i+1:]...)
+            w.WriteHeader(http.StatusNoContent)
+            return
+        }
+    }
+    http.Error(w, "No encontrado", http.StatusNotFound)
+}
+

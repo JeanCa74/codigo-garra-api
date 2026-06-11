@@ -29,6 +29,15 @@ func main() {
 		router.Delete("/{id}", handlers.DeleteAsignacion)
 	})
 
+	// Módulo 2: Recursos (John Bello)
+    r.Route("/api/v1/recursos", func(router chi.Router) {
+        router.Post("/", handlers.CreateRecurso)
+        router.Get("/", handlers.GetRecursos)
+        router.Get("/{id}", handlers.GetRecurso)
+        router.Put("/{id}", handlers.UpdateRecurso)
+        router.Delete("/{id}", handlers.DeleteRecurso)
+    })
+
 	fmt.Println("Servidor de Código Garra API corriendo en http://localhost:8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		fmt.Printf("Error al levantar el servidor: %v\n", err)

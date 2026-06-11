@@ -8,6 +8,8 @@ import (
 	)
 var recursosDB []models.RecursoClinico
 var recursoID int = 0
+
+// CreateRecurso inicializa la disponibilidad de un equipo medico
 func CreateRecurso(w http.ResponseWriter, r *http.Request) {
 var nuevo models.RecursoClinico
 if err := json.NewDecoder(r.Body).Decode(&nuevo); err != nil {

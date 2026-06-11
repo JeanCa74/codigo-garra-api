@@ -3,8 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/JeanCa74/codigo-garra-api/internal/models"
+	"github.com/go-chi/chi/v5"
 )
 
 var asignacionesDB []models.AsignacionTriage
@@ -27,4 +29,16 @@ func CreateAsignacion(w http.ResponseWriter, r *http.Request) {
 func GetAsignaciones(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(asignacionesDB)
+}
+
+func GetAsignacion(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
+	for _, asig := range asignacionesDB {
+		if asig.ID == id {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(asig)
+			return
+		}
+	}
+	http.Error(w, "No encontrado", http.StatusNotFound)
 }

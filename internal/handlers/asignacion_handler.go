@@ -12,6 +12,8 @@ import (
 var asignacionesDB []models.AsignacionTriage
 var asignacionID int = 0
 
+// CreateAsignacion empareja y confirma el bloqueo temporal de un recurso
+
 func CreateAsignacion(w http.ResponseWriter, r *http.Request) {
 	var nueva models.AsignacionTriage
 	if err := json.NewDecoder(r.Body).Decode(&nueva); err != nil {

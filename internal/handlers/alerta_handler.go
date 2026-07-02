@@ -2,74 +2,74 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/JeanCa74/codigo-garra-api/internal/models"
-	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
+
+	"github.com/go-chi/chi/v5"
+
+	"github.com/JeanCa74/codigo-garra-api/internal/models"
 )
 
-var alertasDB []models.AlertaEmergencia
-var alertaID int = 0
+func (s *Server) ListarAlertas(w http.ResponseWriter, r *http.Request) {
+	RespondJSON(w, http.StatusOK, s.Alertas.Listar())
+}
 
-// CreateAlerta registra una nueva emergencia en la memoria del sistema
-func CreateAlerta(w http.ResponseWriter, r *http.Request) {
-	var nueva models.AlertaEmergencia
-	if err := json.NewDecoder(r.Body).Decode(&nueva); err != nil {
-		http.Error(w, "Datos inválidos", http.StatusBadRequest)
+func (s *Server) ObtenerAlerta(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	if nueva.Requerimiento == "" || nueva.Gravedad == 0 {
-		http.Error(w, "Faltan campos obligatorios", http.StatusBadRequest)
+	alerta, err := s.Alertas.Obtener(id)
+	if err != nil {
+		RespondError(w, statusDeError(err), err.Error())
 		return
 	}
-	alertaID++
-	nueva.ID = alertaID
-	nueva.Estado = "Buscando"
-	alertasDB = append(alertasDB, nueva)
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(nueva)
+	RespondJSON(w, http.StatusOK, alerta)
 }
-func GetAlertas(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(alertasDB)
-}
-func GetAlerta(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	for _, a := range alertasDB {
-		if a.ID == id {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(a)
-			return
-		}
-	}
-	http.Error(w, "Alerta no encontrada en el sistema", http.StatusNotFound)
-}
-func UpdateAlerta(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	var actualizacion models.AlertaEmergencia
-	json.NewDecoder(r.Body).Decode(&actualizacion)
 
-	for i, a := range alertasDB {
-		if a.ID == id {
-			alertasDB[i].Gravedad = actualizacion.Gravedad
-			alertasDB[i].Requerimiento = actualizacion.Requerimiento
-			alertasDB[i].Estado = actualizacion.Estado
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(alertasDB[i])
-			return
-		}
+func (s *Server) CrearAlerta(w http.ResponseWriter, r *http.Request) {
+	var a models.AlertaEmergencia
+	if err := json.NewDecoder(r.Body).Decode(&a); err != nil {
+		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
+		return
 	}
-	http.Error(w, "Alerta no encontrada", http.StatusNotFound)
+	creada, err := s.Alertas.Crear(a)
+	if err != nil {
+		RespondError(w, statusDeError(err), err.Error())
+		return
+	}
+	RespondJSON(w, http.StatusCreated, creada)
 }
-func DeleteAlerta(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	for i, a := range alertasDB {
-		if a.ID == id {
-			alertasDB = append(alertasDB[:i], alertasDB[i+1:]...)
-			w.WriteHeader(http.StatusOK)
-			return
-		}
+
+func (s *Server) ActualizarAlerta(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "id inválido")
+		return
 	}
-	http.Error(w, "Alerta no encontrada para eliminar", http.StatusNotFound)
+	var datos models.AlertaEmergencia
+	if err := json.NewDecoder(r.Body).Decode(&datos); err != nil {
+		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
+		return
+	}
+	actualizada, err := s.Alertas.Actualizar(id, datos)
+	if err != nil {
+		RespondError(w, statusDeError(err), err.Error())
+		return
+	}
+	RespondJSON(w, http.StatusOK, actualizada)
+}
+
+func (s *Server) BorrarAlerta(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "id inválido")
+		return
+	}
+	if err := s.Alertas.Borrar(id); err != nil {
+		RespondError(w, statusDeError(err), err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

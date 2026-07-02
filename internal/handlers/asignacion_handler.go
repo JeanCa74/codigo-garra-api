@@ -5,69 +5,71 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/JeanCa74/codigo-garra-api/internal/models"
 	"github.com/go-chi/chi/v5"
+
+	"github.com/JeanCa74/codigo-garra-api/internal/models"
 )
 
-var asignacionesDB []models.AsignacionTriage
-var asignacionID int = 0
+func (s *Server) ListarAsignaciones(w http.ResponseWriter, r *http.Request) {
+	RespondJSON(w, http.StatusOK, s.Asignaciones.Listar())
+}
 
-// CreateAsignacion empareja y confirma el bloqueo temporal de un recurso
-
-func CreateAsignacion(w http.ResponseWriter, r *http.Request) {
-	var nueva models.AsignacionTriage
-	if err := json.NewDecoder(r.Body).Decode(&nueva); err != nil {
-		http.Error(w, "Datos inválidos", http.StatusBadRequest)
+func (s *Server) ObtenerAsignacion(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	asignacionID++
-	nueva.ID = asignacionID
-	nueva.EstadoConfirmacion = "Pendiente"
-	asignacionesDB = append(asignacionesDB, nueva)
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(nueva)
-}
-
-func GetAsignaciones(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(asignacionesDB)
-}
-
-func GetAsignacion(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	for _, asig := range asignacionesDB {
-		if asig.ID == id {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(asig)
-			return
-		}
+	asig, err := s.Asignaciones.Obtener(id)
+	if err != nil {
+		RespondError(w, statusDeError(err), err.Error())
+		return
 	}
-	http.Error(w, "Match de emergencia no encontrado", http.StatusNotFound)
+	RespondJSON(w, http.StatusOK, asig)
 }
 
-func UpdateAsignacion(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	var actualizacion models.AsignacionTriage
-	json.NewDecoder(r.Body).Decode(&actualizacion)
-	for i, asig := range asignacionesDB {
-		if asig.ID == id {
-			asignacionesDB[i].EstadoConfirmacion = actualizacion.EstadoConfirmacion
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(asignacionesDB[i])
-			return
-		}
+func (s *Server) CrearAsignacion(w http.ResponseWriter, r *http.Request) {
+	var a models.AsignacionTriage
+	if err := json.NewDecoder(r.Body).Decode(&a); err != nil {
+		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
+		return
 	}
-	http.Error(w, "Match no encontrado", http.StatusNotFound)
+	creada, err := s.Asignaciones.Crear(a)
+	if err != nil {
+		RespondError(w, statusDeError(err), err.Error())
+		return
+	}
+	RespondJSON(w, http.StatusCreated, creada)
 }
 
-func DeleteAsignacion(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	for i, asig := range asignacionesDB {
-		if asig.ID == id {
-			asignacionesDB = append(asignacionesDB[:i], asignacionesDB[i+1:]...)
-			w.WriteHeader(http.StatusOK)
-			return
-		}
+func (s *Server) ActualizarAsignacion(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "id inválido")
+		return
 	}
-	http.Error(w, "Match no encontrado", http.StatusNotFound)
+	var datos models.AsignacionTriage
+	if err := json.NewDecoder(r.Body).Decode(&datos); err != nil {
+		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
+		return
+	}
+	actualizada, err := s.Asignaciones.Actualizar(id, datos)
+	if err != nil {
+		RespondError(w, statusDeError(err), err.Error())
+		return
+	}
+	RespondJSON(w, http.StatusOK, actualizada)
+}
+
+func (s *Server) BorrarAsignacion(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "id inválido")
+		return
+	}
+	if err := s.Asignaciones.Borrar(id); err != nil {
+		RespondError(w, statusDeError(err), err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

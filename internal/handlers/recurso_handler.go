@@ -2,69 +2,74 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/JeanCa74/codigo-garra-api/internal/models"
-	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
+
+	"github.com/go-chi/chi/v5"
+
+	"github.com/JeanCa74/codigo-garra-api/internal/models"
 )
 
-var recursosDB []models.RecursoClinico
-var recursoID int = 0
+func (s *Server) ListarRecursos(w http.ResponseWriter, r *http.Request) {
+	RespondJSON(w, http.StatusOK, s.Recursos.Listar())
+}
 
-// CreateRecurso inicializa la disponibilidad de un equipo medico
-func CreateRecurso(w http.ResponseWriter, r *http.Request) {
-	var nuevo models.RecursoClinico
-	if err := json.NewDecoder(r.Body).Decode(&nuevo); err != nil {
-		http.Error(w, "Datos inválidos", http.StatusBadRequest)
+func (s *Server) ObtenerRecurso(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	recursoID++
-	nuevo.ID = recursoID
-	recursosDB = append(recursosDB, nuevo)
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(nuevo)
-}
-
-func GetRecursos(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(recursosDB)
-}
-
-func GetRecurso(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	for _, rec := range recursosDB {
-		if rec.ID == id {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(rec)
-			return
-		}
+	recurso, err := s.Recursos.Obtener(id)
+	if err != nil {
+		RespondError(w, statusDeError(err), err.Error())
+		return
 	}
-	http.Error(w, "Recurso clinico no hallado en la base", http.StatusNotFound)
+	RespondJSON(w, http.StatusOK, recurso)
 }
 
-func UpdateRecurso(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	for i, rec := range recursosDB {
-		if rec.ID == id {
-			var actualizado models.RecursoClinico
-			json.NewDecoder(r.Body).Decode(&actualizado)
-			actualizado.ID = id
-			recursosDB[i] = actualizado
-			json.NewEncoder(w).Encode(actualizado)
-			return
-		}
+func (s *Server) CrearRecurso(w http.ResponseWriter, r *http.Request) {
+	var rec models.RecursoClinico
+	if err := json.NewDecoder(r.Body).Decode(&rec); err != nil {
+		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
+		return
 	}
-	http.Error(w, "Recurso no encontrado", http.StatusNotFound)
+	creado, err := s.Recursos.Crear(rec)
+	if err != nil {
+		RespondError(w, statusDeError(err), err.Error())
+		return
+	}
+	RespondJSON(w, http.StatusCreated, creado)
 }
 
-func DeleteRecurso(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
-	for i, rec := range recursosDB {
-		if rec.ID == id {
-			recursosDB = append(recursosDB[:i], recursosDB[i+1:]...)
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
+func (s *Server) ActualizarRecurso(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "id inválido")
+		return
 	}
-	http.Error(w, "No encontrado", http.StatusNotFound)
+	var datos models.RecursoClinico
+	if err := json.NewDecoder(r.Body).Decode(&datos); err != nil {
+		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
+		return
+	}
+	actualizado, err := s.Recursos.Actualizar(id, datos)
+	if err != nil {
+		RespondError(w, statusDeError(err), err.Error())
+		return
+	}
+	RespondJSON(w, http.StatusOK, actualizado)
+}
+
+func (s *Server) BorrarRecurso(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "id inválido")
+		return
+	}
+	if err := s.Recursos.Borrar(id); err != nil {
+		RespondError(w, statusDeError(err), err.Error())
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

@@ -14,20 +14,31 @@ import (
 )
 
 func main() {
-	// 1. GORM abre la base, ejecuta AutoMigrate y devuelve el almacén.
+	// 1. GORM abre la base, ejecuta AutoMigrate para las 6 entidades y devuelve el almacén.
 	almacen, err := storage.NuevoAlmacenGORM("codigogarra.db")
 	if err != nil {
 		log.Fatal("no se pudo abrir la base de datos: ", err)
 	}
 
-	// 2. Capa de servicio con inyección de dependencias.
+	// 2. Capa de servicio — un servicio por entidad del dominio.
 	alertaSvc := service.NuevoAlertaService(almacen)
-	recursoSvc := service.NuevoRecursoService(almacen)
 	asignacionSvc := service.NuevoAsignacionService(almacen)
+	perfilSvc := service.NuevoPerfilVeterinarioService(almacen)
+	recursoSvc := service.NuevoRecursoService(almacen)
+	mascotaSvc := service.NuevoMascotaService(almacen)
+	historialSvc := service.NuevoHistorialMedicoService(almacen)
 	authSvc := service.NuevoAuthService(almacen)
 
-	// 3. Server con los servicios inyectados.
-	servidor := handlers.NewServer(alertaSvc, recursoSvc, asignacionSvc, authSvc)
+	// 3. Server con los 7 servicios inyectados.
+	servidor := handlers.NewServer(
+		alertaSvc,
+		asignacionSvc,
+		perfilSvc,
+		recursoSvc,
+		mascotaSvc,
+		historialSvc,
+		authSvc,
+	)
 
 	// 4. Router + middleware global.
 	r := chi.NewRouter()
@@ -45,26 +56,44 @@ func main() {
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.Auth(authSvc))
 
-			// Módulo Jean Carlos — Alertas de emergencia (Triage)
+			// ── Módulo Jean Carlos — Emergencia médica ──────────────────────
 			r.Get("/alertas", servidor.ListarAlertas)
 			r.Post("/alertas", servidor.CrearAlerta)
 			r.Get("/alertas/{id}", servidor.ObtenerAlerta)
 			r.Put("/alertas/{id}", servidor.ActualizarAlerta)
 			r.Delete("/alertas/{id}", servidor.BorrarAlerta)
 
-			// Módulo John Erick — Recursos clínicos (Capacidad Dinámica)
+			r.Get("/asignaciones", servidor.ListarAsignaciones)
+			r.Post("/asignaciones", servidor.CrearAsignacion)
+			r.Get("/asignaciones/{id}", servidor.ObtenerAsignacion)
+			r.Put("/asignaciones/{id}", servidor.ActualizarAsignacion)
+			r.Delete("/asignaciones/{id}", servidor.BorrarAsignacion)
+
+			// ── Módulo John Erick — Perfil veterinario ───────────────────────
+			r.Get("/veterinarios", servidor.ListarPerfiles)
+			r.Post("/veterinarios", servidor.CrearPerfil)
+			r.Get("/veterinarios/{id}", servidor.ObtenerPerfil)
+			r.Put("/veterinarios/{id}", servidor.ActualizarPerfil)
+			r.Delete("/veterinarios/{id}", servidor.BorrarPerfil)
+			r.Get("/veterinarios/{id}/recursos", servidor.ListarRecursosDePerfil)
+
 			r.Get("/recursos", servidor.ListarRecursos)
 			r.Post("/recursos", servidor.CrearRecurso)
 			r.Get("/recursos/{id}", servidor.ObtenerRecurso)
 			r.Put("/recursos/{id}", servidor.ActualizarRecurso)
 			r.Delete("/recursos/{id}", servidor.BorrarRecurso)
 
-			// Módulo María José — Asignaciones de triage (Enrutamiento y Matching)
-			r.Get("/asignaciones", servidor.ListarAsignaciones)
-			r.Post("/asignaciones", servidor.CrearAsignacion)
-			r.Get("/asignaciones/{id}", servidor.ObtenerAsignacion)
-			r.Put("/asignaciones/{id}", servidor.ActualizarAsignacion)
-			r.Delete("/asignaciones/{id}", servidor.BorrarAsignacion)
+			// ── Módulo María José — Historial médico ─────────────────────────
+			r.Get("/mascotas", servidor.ListarMascotas)
+			r.Post("/mascotas", servidor.CrearMascota)
+			r.Get("/mascotas/{id}", servidor.ObtenerMascota)
+			r.Put("/mascotas/{id}", servidor.ActualizarMascota)
+			r.Delete("/mascotas/{id}", servidor.BorrarMascota)
+			r.Get("/mascotas/{id}/historial", servidor.ListarHistorialDeMascota)
+
+			r.Get("/historial", servidor.ListarHistorial)
+			r.Post("/historial", servidor.CrearHistorial)
+			r.Get("/historial/{id}", servidor.ObtenerHistorial)
 		})
 	})
 

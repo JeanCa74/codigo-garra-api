@@ -2,19 +2,31 @@ package service
 
 import "errors"
 
-// Errores de dominio. El handler los traduce a códigos HTTP:
+// Errores de dominio → traducción HTTP en handlers/respond.go
 //
-//	ErrRequerimientoVacio, ErrGravedadInvalida,
-//	ErrTipoMaquinaVacio, ErrIDsInvalidos     -> 400 Bad Request
-//	ErrNoEncontrado                           -> 404 Not Found
-//	ErrEmailEnUso                             -> 409 Conflict
-//	ErrCredencialesInvalidas                  -> 401 Unauthorized
+//	400 Bad Request  : ErrRequerimientoVacio, ErrGravedadInvalida, ErrIDsInvalidos,
+//	                   ErrNombreVacio, ErrTelefonoVacio, ErrTipoMaquinaVacio,
+//	                   ErrDiagnosticoVacio, ErrMascotaIDInvalido
+//	404 Not Found    : ErrNoEncontrado
+//	409 Conflict     : ErrEmailEnUso
+//	401 Unauthorized : ErrCredencialesInvalidas (y el middleware JWT)
 var (
-	ErrRequerimientoVacio   = errors.New("el campo requerimiento es obligatorio")
-	ErrGravedadInvalida     = errors.New("la gravedad debe estar entre 1 y 5")
-	ErrTipoMaquinaVacio     = errors.New("el campo tipo_maquina es obligatorio")
-	ErrIDsInvalidos         = errors.New("alerta_id y recurso_id deben ser mayores a cero")
-	ErrNoEncontrado         = errors.New("recurso no encontrado")
-	ErrEmailEnUso           = errors.New("el email ya esta registrado")
+	// Jean Carlos — Emergencia médica
+	ErrRequerimientoVacio = errors.New("el campo requerimiento es obligatorio")
+	ErrGravedadInvalida   = errors.New("la gravedad debe estar entre 1 y 5")
+	ErrIDsInvalidos       = errors.New("alerta_id y recurso_id deben ser mayores a cero")
+
+	// John Erick — Perfil veterinario
+	ErrNombreVacio      = errors.New("el campo nombre es obligatorio")
+	ErrTelefonoVacio    = errors.New("el campo telefono es obligatorio")
+	ErrTipoMaquinaVacio = errors.New("el campo tipo_maquina es obligatorio")
+
+	// María José — Historial médico
+	ErrDiagnosticoVacio  = errors.New("el campo diagnostico es obligatorio")
+	ErrMascotaIDInvalido = errors.New("el mascota_id debe ser mayor a cero")
+
+	// Compartidos
+	ErrNoEncontrado          = errors.New("recurso no encontrado")
+	ErrEmailEnUso            = errors.New("el email ya esta registrado")
 	ErrCredencialesInvalidas = errors.New("email o contrasena incorrectos")
 )

@@ -26,7 +26,7 @@ func construirEntornoAsignaciones(t *testing.T) (http.Handler, string) {
 
 	asignacionSvc := service.NuevoAsignacionService(almacen)
 	authSvc := service.NuevoAuthService(usuarios)
-	srv := handlers.NewServer(nil, nil, asignacionSvc, authSvc)
+	srv := handlers.NewServer(nil, asignacionSvc, nil, nil, nil, nil, authSvc)
 
 	r := chi.NewRouter()
 	r.Route("/api/v1", func(r chi.Router) {

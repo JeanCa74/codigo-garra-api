@@ -53,6 +53,10 @@ func (s *RecursoService) Borrar(id int) error {
 	return nil
 }
 
+func (s *RecursoService) ListarPorPerfil(perfilID int) []models.RecursoClinico {
+	return s.repo.ListarRecursosPorPerfil(perfilID)
+}
+
 // validarRecurso aplica las reglas de negocio de capacidad clínica.
 // Regla: tipo_maquina no puede estar vacío (identifica el equipo requerido).
 func validarRecurso(r models.RecursoClinico) error {

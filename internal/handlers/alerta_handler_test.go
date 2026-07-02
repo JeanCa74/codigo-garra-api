@@ -70,7 +70,7 @@ func construirEntornoAlertas(t *testing.T) (http.Handler, string) {
 
 	alertaSvc := service.NuevoAlertaService(almacen)
 	authSvc := service.NuevoAuthService(usuarios)
-	srv := handlers.NewServer(alertaSvc, nil, nil, authSvc)
+	srv := handlers.NewServer(alertaSvc, nil, nil, nil, nil, nil, authSvc)
 
 	r := chi.NewRouter()
 	r.Route("/api/v1", func(r chi.Router) {

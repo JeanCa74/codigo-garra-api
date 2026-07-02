@@ -27,7 +27,7 @@ func construirEntornoRecursos(t *testing.T) (http.Handler, string) {
 
 	recursoSvc := service.NuevoRecursoService(almacen)
 	authSvc := service.NuevoAuthService(usuarios)
-	srv := handlers.NewServer(nil, recursoSvc, nil, authSvc)
+	srv := handlers.NewServer(nil, nil, nil, recursoSvc, nil, nil, authSvc)
 
 	r := chi.NewRouter()
 	r.Route("/api/v1", func(r chi.Router) {
@@ -51,7 +51,7 @@ func construirEntornoRecursos(t *testing.T) (http.Handler, string) {
 // TestCrearRecurso_Exitoso: POST con token y tipo_maquina válido -> 201 Created.
 func TestCrearRecurso_Exitoso(t *testing.T) {
 	h, token := construirEntornoRecursos(t)
-	body := `{"clinica_id":5,"tipo_maquina":"Ecógrafo","esta_disponible":true}`
+	body := `{"perfil_id":5,"tipo_maquina":"Ecógrafo","esta_disponible":true}`
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/recursos", strings.NewReader(body))
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -69,7 +69,7 @@ func TestCrearRecurso_Exitoso(t *testing.T) {
 // TestCrearRecurso_TipoMaquinaVacio: tipo_maquina vacío viola la regla de negocio -> 400.
 func TestCrearRecurso_TipoMaquinaVacio(t *testing.T) {
 	h, token := construirEntornoRecursos(t)
-	body := `{"clinica_id":2,"tipo_maquina":"","esta_disponible":true}`
+	body := `{"perfil_id":2,"tipo_maquina":"","esta_disponible":true}`
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/recursos", strings.NewReader(body))
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -83,7 +83,7 @@ func TestCrearRecurso_TipoMaquinaVacio(t *testing.T) {
 // TestRutaRecursos_SinToken: sin Authorization el middleware devuelve 401.
 func TestRutaRecursos_SinToken(t *testing.T) {
 	h, _ := construirEntornoRecursos(t)
-	body := `{"clinica_id":1,"tipo_maquina":"Ventilador","esta_disponible":true}`
+	body := `{"perfil_id":1,"tipo_maquina":"Ventilador","esta_disponible":true}`
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/recursos", strings.NewReader(body))
 	rec := httptest.NewRecorder()

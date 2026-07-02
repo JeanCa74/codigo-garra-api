@@ -35,8 +35,12 @@ func statusDeError(err error) int {
 		return http.StatusUnauthorized
 	case errors.Is(err, service.ErrRequerimientoVacio),
 		errors.Is(err, service.ErrGravedadInvalida),
+		errors.Is(err, service.ErrIDsInvalidos),
+		errors.Is(err, service.ErrNombreVacio),
+		errors.Is(err, service.ErrTelefonoVacio),
 		errors.Is(err, service.ErrTipoMaquinaVacio),
-		errors.Is(err, service.ErrIDsInvalidos):
+		errors.Is(err, service.ErrDiagnosticoVacio),
+		errors.Is(err, service.ErrMascotaIDInvalido):
 		return http.StatusBadRequest
 	default:
 		return http.StatusInternalServerError

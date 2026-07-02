@@ -17,7 +17,7 @@ func TestGORM_CrearYBuscarRecurso(t *testing.T) {
 	require.NoError(t, err, "debe abrir la base en memoria sin error")
 
 	entrada := models.RecursoClinico{
-		ClinicaID:      7,
+		PerfilID:       7,
 		TipoMaquina:    "Ecógrafo portátil",
 		EstaDisponible: true,
 	}
@@ -28,7 +28,7 @@ func TestGORM_CrearYBuscarRecurso(t *testing.T) {
 
 	encontrado, ok := almacen.BuscarRecursoPorID(creado.ID)
 	require.True(t, ok, "el recurso recién creado debe encontrarse por su ID")
-	assert.Equal(t, 7, encontrado.ClinicaID)
+	assert.Equal(t, 7, encontrado.PerfilID)
 	assert.Equal(t, "Ecógrafo portátil", encontrado.TipoMaquina)
 	assert.True(t, encontrado.EstaDisponible)
 }
@@ -38,8 +38,8 @@ func TestGORM_ListarRecursosReflejaCreacion(t *testing.T) {
 	almacen, err := storage.NuevoAlmacenGORM(":memory:")
 	require.NoError(t, err)
 
-	almacen.CrearRecurso(models.RecursoClinico{ClinicaID: 1, TipoMaquina: "Rayos X", EstaDisponible: true})
-	almacen.CrearRecurso(models.RecursoClinico{ClinicaID: 2, TipoMaquina: "Ventilador", EstaDisponible: false})
+	almacen.CrearRecurso(models.RecursoClinico{PerfilID: 1, TipoMaquina: "Rayos X", EstaDisponible: true})
+	almacen.CrearRecurso(models.RecursoClinico{PerfilID: 2, TipoMaquina: "Ventilador", EstaDisponible: false})
 
 	lista := almacen.ListarRecursos()
 	assert.Len(t, lista, 2, "deben listarse los dos recursos creados")

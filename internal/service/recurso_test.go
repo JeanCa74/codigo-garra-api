@@ -34,6 +34,9 @@ func (m *recursoRepoMock) ActualizarRecurso(id int, datos models.RecursoClinico)
 func (m *recursoRepoMock) BorrarRecurso(id int) bool {
 	return m.Called(id).Bool(0)
 }
+func (m *recursoRepoMock) ListarRecursosPorPerfil(perfilID int) []models.RecursoClinico {
+	return m.Called(perfilID).Get(0).([]models.RecursoClinico)
+}
 
 var _ storage.RecursoRepository = (*recursoRepoMock)(nil)
 
@@ -48,19 +51,19 @@ func TestRecursoService_Crear(t *testing.T) {
 	}{
 		{
 			"tipo_maquina vacio -> ErrTipoMaquinaVacio y NO llega al repo",
-			models.RecursoClinico{ClinicaID: 1, TipoMaquina: "", EstaDisponible: true},
+			models.RecursoClinico{PerfilID: 1, TipoMaquina: "", EstaDisponible: true},
 			service.ErrTipoMaquinaVacio,
 			false,
 		},
 		{
 			"tipo_maquina solo espacios -> ErrTipoMaquinaVacio y NO llega al repo",
-			models.RecursoClinico{ClinicaID: 2, TipoMaquina: "   ", EstaDisponible: true},
+			models.RecursoClinico{PerfilID: 2, TipoMaquina: "   ", EstaDisponible: true},
 			service.ErrTipoMaquinaVacio,
 			false,
 		},
 		{
 			"recurso valido -> sin error y se persiste",
-			models.RecursoClinico{ClinicaID: 3, TipoMaquina: "Ecógrafo", EstaDisponible: true},
+			models.RecursoClinico{PerfilID: 3, TipoMaquina: "Ecógrafo", EstaDisponible: true},
 			nil,
 			true,
 		},

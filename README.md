@@ -1,231 +1,246 @@
-# Código Garra — API Backend
+# Código Garra API
 
-**Aplicaciones Web II (TDI-601) · Semana 11 · Actividad C1**
-
-API REST para conectar dueños de mascotas en emergencias veterinarias nocturnas con las clínicas que disponen del equipo específico requerido en ese momento.
-
----
-
-## Integrantes — Grupo L (Bloque 3)
-
-| Integrante | Módulo | Entidad | Regla de negocio |
-|------------|--------|---------|-----------------|
-| **Jean Carlos Arauz** | Triage y Alertas | `AlertaEmergencia` | Gravedad fuera de [1,5] → `ErrGravedadInvalida` (400) |
-| **John Erick Bello** | Capacidad Dinámica | `RecursoClinico` | `TipoMaquina` vacío → `ErrTipoMaquinaVacio` (400) |
-| **María José Vinces** | Enrutamiento y Matching | `AsignacionTriage` | `AlertaID` o `RecursoID` = 0 → `ErrIDsInvalidos` (400) |
+Plataforma REST de emergencias veterinarias desarrollada en Go.  
+Proyecto de curso **TDI-601 – Aplicaciones Web II**, Semana 11, Actividad C1.
 
 ---
 
-## Stack tecnológico
+## Integrantes y módulos
 
-| Componente | Tecnología |
-|-----------|-----------|
-| Lenguaje | Go 1.22 |
-| Router | Chi v5 |
-| ORM | GORM |
-| Base de datos | SQLite (dev / :memory: en tests) |
-| Autenticación | JWT (golang-jwt/jwt/v5) + bcrypt |
-| Testing | Testify (mock + assert + require) |
+| Estudiante | Módulo | Entidades |
+|---|---|---|
+| **Jean Carlos Arauz** | Emergencia médica | `AlertaEmergencia`, `AsignacionTriage` |
+| **John Erick Bello** | Perfil veterinario | `PerfilVeterinario`, `RecursoClinico` |
+| **María José Vinces** | Historial médico | `Mascota`, `HistorialMedico` |
 
 ---
 
-## Arquitectura: model → repository → service → handler
+## Stack técnico
 
-```
-internal/
-├── models/
-│   ├── alerta.go          — AlertaEmergencia (GORM tags)
-│   ├── recursos.go        — RecursoClinico   (GORM tags)
-│   ├── asignacion.go      — AsignacionTriage (GORM tags)
-│   └── usuario.go         — Usuario (auth)
-├── storage/
-│   ├── repositorio.go     — interfaces: AlertaRepository, RecursoRepository,
-│   │                         AsignacionRepository, Almacen, UserRepository
-│   ├── memoria.go         — fake en RAM (usado en tests de handler)
-│   ├── gorm.go            — implementación GORM + SQLite + AutoMigrate
-│   ├── gorm_alerta_test.go    ✅ Jean Carlos — repositorio contra SQLite :memory:
-│   ├── gorm_recurso_test.go   ✅ John Erick  — repositorio contra SQLite :memory:
-│   └── gorm_asignacion_test.go ✅ María José  — repositorio contra SQLite :memory:
-├── service/
-│   ├── errores.go         — errores de dominio compartidos
-│   ├── alerta.go          — validarAlerta (escala de gravedad [1,5])
-│   ├── alerta_test.go     ✅ Jean Carlos — service con mock
-│   ├── recurso.go         — validarRecurso (tipo_maquina obligatorio)
-│   ├── recurso_test.go    ✅ John Erick  — service con mock
-│   ├── asignacion.go      — validarAsignacion (IDs > 0)
-│   ├── asignacion_test.go ✅ María José  — service con mock
-│   └── auth.go            — bcrypt + JWT
-├── handlers/
-│   ├── server.go          — Server con los tres servicios inyectados
-│   ├── respond.go         — RespondJSON / RespondError / statusDeError
-│   ├── alerta_handler.go          — CRUD de alertas
-│   ├── alerta_handler_test.go     ✅ Jean Carlos — httptest + 401
-│   ├── recurso_handler.go         — CRUD de recursos
-│   ├── recurso_handler_test.go    ✅ John Erick  — httptest + 401
-│   ├── asignacion_handler.go      — CRUD de asignaciones
-│   ├── asignacion_handler_test.go ✅ María José  — httptest + 401
-│   └── auth_handler.go    — register + login
-└── middleware/
-    ├── auth.go            — JWT middleware Bearer → produce el 401
-    └── cors.go            — CORS para desarrollo
-```
+- **Lenguaje**: Go 1.22+
+- **ORM**: GORM + SQLite pure-Go (`github.com/glebarez/sqlite`) — sin CGO
+- **Router**: chi v5
+- **Autenticación**: JWT (`golang-jwt/jwt/v5`) + bcrypt
+- **Tests**: `testing` + `testify` (mock, assert, require) + `httptest`
 
 ---
 
-## Tests — Suite en verde (18 tests)
-
-```bash
-go test ./... -cover
-```
+## Estructura del proyecto
 
 ```
-ok  github.com/JeanCa74/codigo-garra-api/internal/handlers   coverage: 25.7%
-ok  github.com/JeanCa74/codigo-garra-api/internal/service    coverage: 29.1%
-ok  github.com/JeanCa74/codigo-garra-api/internal/storage    coverage: 17.3%
+codigo-garra-api/
+├── cmd/
+│   └── main.go                 — punto de entrada, wiring DI
+├── internal/
+│   ├── models/                 — entidades GORM (6 modelos + Usuario)
+│   │   ├── alerta.go
+│   │   ├── asignacion.go
+│   │   ├── perfil_veterinario.go
+│   │   ├── recursos.go
+│   │   ├── mascota.go
+│   │   ├── historial_medico.go
+│   │   └── usuario.go
+│   ├── storage/
+│   │   ├── repositorio.go      — interfaces (ISP: 6 repos + UserRepository)
+│   │   ├── gorm.go             — implementación GORM + AutoMigrate
+│   │   ├── memoria.go          — fake RAM (usado en tests de handler)
+│   │   ├── gorm_alerta_test.go
+│   │   ├── gorm_asignacion_test.go
+│   │   ├── gorm_recurso_test.go
+│   │   ├── gorm_perfil_test.go
+│   │   └── gorm_historial_test.go
+│   ├── service/
+│   │   ├── errores.go          — errores de dominio tipados
+│   │   ├── alerta.go / alerta_test.go
+│   │   ├── asignacion.go / asignacion_test.go
+│   │   ├── perfil_veterinario.go / perfil_veterinario_test.go
+│   │   ├── recurso.go / recurso_test.go
+│   │   ├── mascota.go
+│   │   ├── historial_medico.go / historial_medico_test.go
+│   │   └── auth.go
+│   ├── handlers/
+│   │   ├── server.go           — struct Server + NewServer (7 servicios)
+│   │   ├── respond.go          — helpers JSON + traducción de errores
+│   │   ├── auth_handler.go
+│   │   ├── alerta_handler.go / alerta_handler_test.go
+│   │   ├── asignacion_handler.go / asignacion_handler_test.go
+│   │   ├── perfil_veterinario_handler.go / perfil_veterinario_handler_test.go
+│   │   ├── recurso_handler.go / recurso_handler_test.go
+│   │   ├── mascota_handler.go
+│   │   └── historial_medico_handler.go / historial_medico_handler_test.go
+│   └── middleware/
+│       ├── auth.go             — JWT Bearer → 401
+│       └── cors.go
+└── go.mod
 ```
 
 ---
 
-## Módulo Jean Carlos — Triage y Alertas
-
-### Reglas de negocio
-
-| Regla | Error | HTTP |
-|-------|-------|------|
-| `Requerimiento` vacío | `ErrRequerimientoVacio` | 400 |
-| `Gravedad` fuera de [1,5] | `ErrGravedadInvalida` | 400 |
-| No encontrada | `ErrNoEncontrado` | 404 |
-
-### Test 1 — Service con mock (`service/alerta_test.go`)
-
-**Qué comprueba:** Que `validarAlerta` rechaza gravedad fuera de la escala [1,5] **antes** de llamar al repositorio.
-
-**Cómo funciona:**
-- Se crea un `alertaRepoMock` (testify/mock) que registra llamadas.
-- Se llama a `svc.Crear(...)` con `Gravedad: 0` → se espera `ErrGravedadInvalida`.
-- `AssertNotCalled` verifica que el repo **nunca** recibió `CrearAlerta`.
-
-**Qué se rompería:** Si se elimina la validación de gravedad, el mock recibe una llamada inesperada y el test falla.
-
-### Test 2 — Handler con httptest (`handlers/alerta_handler_test.go`)
-
-**Test 2a — `TestCrearAlerta_Exitosa`:** POST con token y gravedad válida → 201 Created.
-
-**Test 2b — `TestRutaAlertas_SinToken` (el 401):** POST sin `Authorization` → 401 Unauthorized. Lo genera el middleware, nunca el handler.
-
-**Qué se rompería:** Si se elimina `r.Use(middleware.Auth(...))`, la petición llega al handler y responde 201.
-
-### Test 3 — Repositorio GORM :memory: (`storage/gorm_alerta_test.go`)
-
-**Qué comprueba:** Que `CrearAlerta` persiste en SQLite y `BuscarAlertaPorID` lo refleja.
-
-**Qué se rompería:** Si `AutoMigrate` no crea la tabla, el ID queda en 0 → falla `require.NotZero`.
-
----
-
-## Módulo John Erick — Capacidad Dinámica (Recursos)
-
-### Reglas de negocio
-
-| Regla | Error | HTTP |
-|-------|-------|------|
-| `TipoMaquina` vacío | `ErrTipoMaquinaVacio` | 400 |
-| No encontrado | `ErrNoEncontrado` | 404 |
-
-### Test 1 — Service con mock (`service/recurso_test.go`)
-
-**Qué comprueba:** Que `validarRecurso` rechaza `TipoMaquina` vacío **antes** de llamar al repositorio.
-
-**Cómo funciona:**
-- Se crea un `recursoRepoMock`.
-- Se llama a `svc.Crear(...)` con `TipoMaquina: ""` → se espera `ErrTipoMaquinaVacio`.
-- `AssertNotCalled` verifica que el repo **nunca** recibió `CrearRecurso`.
-
-**Qué se rompería:** Sin la validación, el mock recibe la llamada y el test falla.
-
-### Test 2 — Handler con httptest (`handlers/recurso_handler_test.go`)
-
-**Test 2a — `TestCrearRecurso_Exitoso`:** POST con token y tipo_maquina válido → 201 Created.
-
-**Test 2b — `TestRutaRecursos_SinToken` (el 401):** POST sin `Authorization` → 401 Unauthorized.
-
-### Test 3 — Repositorio GORM :memory: (`storage/gorm_recurso_test.go`)
-
-**Qué comprueba:** Que `CrearRecurso` persiste en SQLite y `BuscarRecursoPorID` lo refleja.
-
----
-
-## Módulo María José — Enrutamiento y Matching (Asignaciones)
-
-### Reglas de negocio
-
-| Regla | Error | HTTP |
-|-------|-------|------|
-| `AlertaID` ≤ 0 o `RecursoID` ≤ 0 | `ErrIDsInvalidos` | 400 |
-| No encontrada | `ErrNoEncontrado` | 404 |
-
-### Test 1 — Service con mock (`service/asignacion_test.go`)
-
-**Qué comprueba:** Que `validarAsignacion` rechaza IDs inválidos **antes** de llamar al repositorio.
-
-**Cómo funciona:**
-- Se crea un `asignacionRepoMock`.
-- Se llama a `svc.Crear(...)` con `AlertaID: 0` → se espera `ErrIDsInvalidos`.
-- `AssertNotCalled` verifica que el repo **nunca** recibió `CrearAsignacion`.
-
-**Qué se rompería:** Sin la validación de IDs, el repo intentaría crear una asignación huérfana.
-
-### Test 2 — Handler con httptest (`handlers/asignacion_handler_test.go`)
-
-**Test 2a — `TestCrearAsignacion_Exitosa`:** POST con IDs válidos y token → 201 Created.
-
-**Test 2b — `TestRutaAsignaciones_SinToken` (el 401):** POST sin `Authorization` → 401 Unauthorized.
-
-### Test 3 — Repositorio GORM :memory: (`storage/gorm_asignacion_test.go`)
-
-**Qué comprueba:** Que `CrearAsignacion` persiste en SQLite y `BuscarAsignacionPorID` lo refleja.
-
----
-
-## Conceptos clave (glosario para la presentación)
-
-| Término | Definición |
-|---------|-----------|
-| **Mock** | Doble de prueba que verifica que ciertas llamadas ocurrieron (o no). Usa testify/mock. |
-| **Fake** | Implementación alternativa funcional (guarda datos en RAM). No verifica llamadas. |
-| **httptest** | Paquete estándar de Go para probar handlers HTTP sin levantar un servidor real. |
-| **:memory:** | DSN especial de SQLite que abre la base en RAM; se destruye al cerrar la conexión. |
-| **401** | Lo genera el middleware Auth cuando el header Authorization está ausente o el token es inválido. El handler nunca lo produce. |
-| **AutoMigrate** | GORM crea/actualiza las tablas automáticamente a partir de los structs Go. |
-
----
-
-## Ejecutar el servidor
+## Ejecutar la API
 
 ```bash
 go run ./cmd/main.go
-# → http://localhost:8080
-# → crea codigogarra.db automáticamente
+# Servidor en http://localhost:8080
 ```
 
-## Endpoints disponibles
+## Ejecutar todos los tests
 
-| Método | Ruta | Auth | Módulo |
-|--------|------|------|--------|
-| POST | `/api/v1/auth/register` | No | — |
-| POST | `/api/v1/auth/login` | No | — |
-| GET | `/api/v1/alertas` | Bearer JWT | Jean Carlos |
-| POST | `/api/v1/alertas` | Bearer JWT | Jean Carlos |
-| GET | `/api/v1/alertas/{id}` | Bearer JWT | Jean Carlos |
-| PUT | `/api/v1/alertas/{id}` | Bearer JWT | Jean Carlos |
-| DELETE | `/api/v1/alertas/{id}` | Bearer JWT | Jean Carlos |
-| GET | `/api/v1/recursos` | Bearer JWT | John Erick |
-| POST | `/api/v1/recursos` | Bearer JWT | John Erick |
-| GET | `/api/v1/recursos/{id}` | Bearer JWT | John Erick |
-| PUT | `/api/v1/recursos/{id}` | Bearer JWT | John Erick |
-| DELETE | `/api/v1/recursos/{id}` | Bearer JWT | John Erick |
-| GET | `/api/v1/asignaciones` | Bearer JWT | María José |
-| POST | `/api/v1/asignaciones` | Bearer JWT | María José |
-| GET | `/api/v1/asignaciones/{id}` | Bearer JWT | María José |
-| PUT | `/api/v1/asignaciones/{id}` | Bearer JWT | María José |
-| DELETE | `/api/v1/asignaciones/{id}` | Bearer JWT | María José |
+```bash
+go test ./...
+```
+
+---
+
+## Endpoints
+
+Todas las rutas protegidas requieren `Authorization: Bearer <token>`.
+
+### Auth (público)
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/api/v1/auth/register` | Registrar usuario |
+| POST | `/api/v1/auth/login` | Login → devuelve JWT |
+
+### Jean Carlos — Emergencia médica
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/v1/alertas` | Listar alertas |
+| POST | `/api/v1/alertas` | Crear alerta (gravedad 1-5, requerimiento obligatorio) |
+| GET | `/api/v1/alertas/{id}` | Obtener alerta |
+| PUT | `/api/v1/alertas/{id}` | Actualizar alerta |
+| DELETE | `/api/v1/alertas/{id}` | Borrar alerta |
+| GET | `/api/v1/asignaciones` | Listar asignaciones de triage |
+| POST | `/api/v1/asignaciones` | Crear asignación (alerta_id y recurso_id > 0) |
+| GET | `/api/v1/asignaciones/{id}` | Obtener asignación |
+| PUT | `/api/v1/asignaciones/{id}` | Actualizar asignación |
+| DELETE | `/api/v1/asignaciones/{id}` | Borrar asignación |
+
+### John Erick — Perfil veterinario
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/v1/veterinarios` | Listar perfiles veterinarios |
+| POST | `/api/v1/veterinarios` | Crear perfil (nombre y telefono obligatorios) |
+| GET | `/api/v1/veterinarios/{id}` | Obtener perfil |
+| PUT | `/api/v1/veterinarios/{id}` | Actualizar perfil |
+| DELETE | `/api/v1/veterinarios/{id}` | Borrar perfil |
+| GET | `/api/v1/veterinarios/{id}/recursos` | Recursos del perfil |
+| GET | `/api/v1/recursos` | Listar recursos clínicos |
+| POST | `/api/v1/recursos` | Crear recurso (tipo_maquina obligatorio) |
+| GET | `/api/v1/recursos/{id}` | Obtener recurso |
+| PUT | `/api/v1/recursos/{id}` | Actualizar recurso |
+| DELETE | `/api/v1/recursos/{id}` | Borrar recurso |
+
+### María José — Historial médico
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/v1/mascotas` | Listar mascotas |
+| POST | `/api/v1/mascotas` | Crear mascota (nombre obligatorio) |
+| GET | `/api/v1/mascotas/{id}` | Obtener mascota |
+| PUT | `/api/v1/mascotas/{id}` | Actualizar mascota |
+| DELETE | `/api/v1/mascotas/{id}` | Borrar mascota |
+| GET | `/api/v1/mascotas/{id}/historial` | Historial de la mascota |
+| GET | `/api/v1/historial` | Listar todo el historial |
+| POST | `/api/v1/historial` | Crear entrada (mascota_id > 0, diagnostico obligatorio) |
+| GET | `/api/v1/historial/{id}` | Obtener entrada de historial |
+
+---
+
+## Tests por estudiante
+
+### Jean Carlos Arauz — Módulo Emergencia médica
+
+| Tipo | Archivo | Qué verifica |
+|---|---|---|
+| Service mock | `service/alerta_test.go` | `validarAlerta`: gravedad 0/6 → `ErrGravedadInvalida`, `AssertNotCalled("CrearAlerta")` |
+| Service mock | `service/asignacion_test.go` | `validarAsignacion`: IDs ≤ 0 → `ErrIDsInvalidos`, `AssertNotCalled("CrearAsignacion")` |
+| Handler httptest | `handlers/alerta_handler_test.go` | POST válido → 201; gravedad inválida → 400; sin token → **401** |
+| Handler httptest | `handlers/asignacion_handler_test.go` | POST válido → 201; IDs inválidos → 400; sin token → **401** |
+| Repository GORM | `storage/gorm_alerta_test.go` | `CrearAlerta` + `BuscarAlertaPorID` con SQLite `:memory:` |
+| Repository GORM | `storage/gorm_asignacion_test.go` | `CrearAsignacion` + `BuscarAsignacionPorID` |
+
+### John Erick Bello — Módulo Perfil veterinario
+
+| Tipo | Archivo | Qué verifica |
+|---|---|---|
+| **Service mock** | `service/perfil_veterinario_test.go` | `validarPerfil`: nombre/teléfono vacíos → `ErrNombreVacio`/`ErrTelefonoVacio`, `AssertNotCalled("CrearPerfil")` |
+| Service mock | `service/recurso_test.go` | `validarRecurso`: tipo_maquina vacío → `ErrTipoMaquinaVacio`, `AssertNotCalled` |
+| **Handler httptest** | `handlers/perfil_veterinario_handler_test.go` | POST válido → 201; teléfono vacío → 400; sin token → **401** |
+| Handler httptest | `handlers/recurso_handler_test.go` | POST válido → 201; tipo_maquina vacío → 400; sin token → 401 |
+| **Repository GORM** | `storage/gorm_perfil_test.go` | `CrearPerfil` + `BuscarPerfilPorID` con SQLite `:memory:` |
+| Repository GORM | `storage/gorm_recurso_test.go` | `CrearRecurso` + `BuscarRecursoPorID` |
+
+### María José Vinces — Módulo Historial médico
+
+| Tipo | Archivo | Qué verifica |
+|---|---|---|
+| **Service mock** | `service/historial_medico_test.go` | `validarHistorial`: mascota_id ≤ 0 / diagnóstico vacío → error, `AssertNotCalled("CrearHistorial")` |
+| **Handler httptest** | `handlers/historial_medico_handler_test.go` | POST válido → 201; diagnóstico vacío → 400; sin token → **401** |
+| **Repository GORM** | `storage/gorm_historial_test.go` | `CrearHistorial` + `BuscarHistorialPorID` + `ListarHistorialPorMascota` |
+
+---
+
+## Reglas de negocio
+
+| Módulo | Entidad | Regla |
+|---|---|---|
+| Jean Carlos | `AlertaEmergencia` | `gravedad` ∈ [1, 5]; `requerimiento` no vacío |
+| Jean Carlos | `AsignacionTriage` | `alerta_id` > 0 y `recurso_id` > 0 |
+| John Erick | `PerfilVeterinario` | `nombre` no vacío; `telefono` no vacío |
+| John Erick | `RecursoClinico` | `tipo_maquina` no vacío |
+| María José | `Mascota` | `nombre` no vacío |
+| María José | `HistorialMedico` | `mascota_id` > 0; `diagnostico` no vacío |
+
+---
+
+## Conceptos clave
+
+| Término | Definición |
+|---|---|
+| **Mock** | Doble de prueba que registra y verifica llamadas. `AssertNotCalled` demuestra que la validación actúa ANTES del repositorio. |
+| **Fake** | Implementación alternativa que guarda datos en RAM. No verifica llamadas. Se usa en tests de handler. |
+| **httptest** | Paquete estándar de Go para probar handlers sin levantar un servidor real. |
+| **:memory:** | DSN de SQLite que abre la base en RAM. Cada test tiene su base aislada. |
+| **401** | Lo genera el middleware `Auth`, nunca el handler. El 401 demuestra que el JWT protege las rutas. |
+| **AutoMigrate** | GORM crea/actualiza las tablas a partir de los structs. Sin ella el test de repositorio falla en `NotZero(ID)`. |
+
+---
+
+## Ejemplo de uso rápido
+
+```bash
+# 1. Registro y login
+curl -s -X POST http://localhost:8080/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"vet@codigogarra.vet","password":"secreto123"}'
+
+TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"vet@codigogarra.vet","password":"secreto123"}' | jq -r .token)
+
+# 2. Crear alerta de emergencia (Jean Carlos)
+curl -X POST http://localhost:8080/api/v1/alertas \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"gravedad":4,"requerimiento":"Ventilador mecánico","estado":"Buscando"}'
+
+# 3. Crear perfil veterinario (John Erick)
+curl -X POST http://localhost:8080/api/v1/veterinarios \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Clínica Garra Norte","telefono":"0987654321","activo":true}'
+
+# 4. Crear mascota y registrar historial (María José)
+curl -X POST http://localhost:8080/api/v1/mascotas \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"nombre":"Simba","especie":"Gato","edad":3,"dueno":"Ana Pérez"}'
+
+curl -X POST http://localhost:8080/api/v1/historial \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"mascota_id":1,"diagnostico":"Gastritis leve","tratamiento":"Dieta blanda","fecha":"2026-07-01"}'
+```

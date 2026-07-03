@@ -11,7 +11,7 @@ import (
 )
 
 func (s *Server) ListarPerfiles(w http.ResponseWriter, r *http.Request) {
-	RespondJSON(w, http.StatusOK, s.Perfiles.Listar())
+	RespondJSON(w, http.StatusOK, s.deps.Perfiles.Listar())
 }
 
 func (s *Server) ObtenerPerfil(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +20,7 @@ func (s *Server) ObtenerPerfil(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	perfil, err := s.Perfiles.Obtener(id)
+	perfil, err := s.deps.Perfiles.Obtener(id)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -34,7 +34,7 @@ func (s *Server) CrearPerfil(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
-	creado, err := s.Perfiles.Crear(p)
+	creado, err := s.deps.Perfiles.Crear(p)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -53,7 +53,7 @@ func (s *Server) ActualizarPerfil(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
-	actualizado, err := s.Perfiles.Actualizar(id, datos)
+	actualizado, err := s.deps.Perfiles.Actualizar(id, datos)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -67,7 +67,7 @@ func (s *Server) BorrarPerfil(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	if err := s.Perfiles.Borrar(id); err != nil {
+	if err := s.deps.Perfiles.Borrar(id); err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
 	}
@@ -81,5 +81,5 @@ func (s *Server) ListarRecursosDePerfil(w http.ResponseWriter, r *http.Request) 
 		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	RespondJSON(w, http.StatusOK, s.Recursos.ListarPorPerfil(id))
+	RespondJSON(w, http.StatusOK, s.deps.Recursos.ListarPorPerfil(id))
 }

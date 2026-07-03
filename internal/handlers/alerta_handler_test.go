@@ -70,7 +70,13 @@ func construirEntornoAlertas(t *testing.T) (http.Handler, string) {
 
 	alertaSvc := service.NuevoAlertaService(almacen)
 	authSvc := service.NuevoAuthService(usuarios)
-	srv := handlers.NewServer(alertaSvc, nil, nil, nil, nil, nil, authSvc)
+
+	// --- CORRECCIÓN: Inyección mediante ServerDeps ---
+	deps := handlers.ServerDeps{
+		Alertas: alertaSvc,
+		Auth:    authSvc,
+	}
+	srv := handlers.NewServer(deps)
 
 	r := chi.NewRouter()
 	r.Route("/api/v1", func(r chi.Router) {
@@ -124,15 +130,11 @@ func TestCrearAlerta_GravedadInvalida(t *testing.T) {
 }
 
 // TestRutaAlertas_SinToken: sin Authorization el middleware devuelve 401.
-//
-// Qué se rompería: si se elimina r.Use(middleware.Auth(...)), la petición
-// llegaría al handler y respondería 201 en lugar de 401.
 func TestRutaAlertas_SinToken(t *testing.T) {
 	h, _ := construirEntornoAlertas(t)
 	body := `{"gravedad":3,"requerimiento":"Radiografía"}`
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/alertas", strings.NewReader(body))
-	// A propósito: NO establecemos el header Authorization.
 	rec := httptest.NewRecorder()
 
 	h.ServeHTTP(rec, req)

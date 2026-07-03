@@ -11,7 +11,7 @@ import (
 )
 
 func (s *Server) ListarAsignaciones(w http.ResponseWriter, r *http.Request) {
-	RespondJSON(w, http.StatusOK, s.Asignaciones.Listar())
+	RespondJSON(w, http.StatusOK, s.deps.Asignaciones.Listar())
 }
 
 func (s *Server) ObtenerAsignacion(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +20,7 @@ func (s *Server) ObtenerAsignacion(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	asig, err := s.Asignaciones.Obtener(id)
+	asig, err := s.deps.Asignaciones.Obtener(id)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -34,7 +34,7 @@ func (s *Server) CrearAsignacion(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
-	creada, err := s.Asignaciones.Crear(a)
+	creada, err := s.deps.Asignaciones.Crear(a)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -53,7 +53,7 @@ func (s *Server) ActualizarAsignacion(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
-	actualizada, err := s.Asignaciones.Actualizar(id, datos)
+	actualizada, err := s.deps.Asignaciones.Actualizar(id, datos)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -67,7 +67,7 @@ func (s *Server) BorrarAsignacion(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	if err := s.Asignaciones.Borrar(id); err != nil {
+	if err := s.deps.Asignaciones.Borrar(id); err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
 	}

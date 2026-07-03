@@ -11,7 +11,7 @@ import (
 )
 
 func (s *Server) ListarHistorial(w http.ResponseWriter, r *http.Request) {
-	RespondJSON(w, http.StatusOK, s.HistorialMed.Listar())
+	RespondJSON(w, http.StatusOK, s.deps.HistorialMed.Listar())
 }
 
 func (s *Server) ObtenerHistorial(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +20,7 @@ func (s *Server) ObtenerHistorial(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	h, err := s.HistorialMed.ObtenerPorID(id)
+	h, err := s.deps.HistorialMed.ObtenerPorID(id)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -34,7 +34,7 @@ func (s *Server) CrearHistorial(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
-	creado, err := s.HistorialMed.Crear(h)
+	creado, err := s.deps.HistorialMed.Crear(h)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -49,5 +49,5 @@ func (s *Server) ListarHistorialDeMascota(w http.ResponseWriter, r *http.Request
 		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	RespondJSON(w, http.StatusOK, s.HistorialMed.ListarPorMascota(id))
+	RespondJSON(w, http.StatusOK, s.deps.HistorialMed.ListarPorMascota(id))
 }

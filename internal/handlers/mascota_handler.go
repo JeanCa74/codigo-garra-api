@@ -11,7 +11,7 @@ import (
 )
 
 func (s *Server) ListarMascotas(w http.ResponseWriter, r *http.Request) {
-	RespondJSON(w, http.StatusOK, s.Mascotas.Listar())
+	RespondJSON(w, http.StatusOK, s.deps.Mascotas.Listar())
 }
 
 func (s *Server) ObtenerMascota(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +20,7 @@ func (s *Server) ObtenerMascota(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	mascota, err := s.Mascotas.Obtener(id)
+	mascota, err := s.deps.Mascotas.Obtener(id)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -34,7 +34,7 @@ func (s *Server) CrearMascota(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
-	creada, err := s.Mascotas.Crear(m)
+	creada, err := s.deps.Mascotas.Crear(m)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -53,7 +53,7 @@ func (s *Server) ActualizarMascota(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
-	actualizada, err := s.Mascotas.Actualizar(id, datos)
+	actualizada, err := s.deps.Mascotas.Actualizar(id, datos)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -67,7 +67,7 @@ func (s *Server) BorrarMascota(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	if err := s.Mascotas.Borrar(id); err != nil {
+	if err := s.deps.Mascotas.Borrar(id); err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
 	}

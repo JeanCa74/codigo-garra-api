@@ -11,7 +11,7 @@ import (
 )
 
 func (s *Server) ListarRecursos(w http.ResponseWriter, r *http.Request) {
-	RespondJSON(w, http.StatusOK, s.Recursos.Listar())
+	RespondJSON(w, http.StatusOK, s.deps.Recursos.Listar())
 }
 
 func (s *Server) ObtenerRecurso(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +20,7 @@ func (s *Server) ObtenerRecurso(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	recurso, err := s.Recursos.Obtener(id)
+	recurso, err := s.deps.Recursos.Obtener(id)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -34,7 +34,7 @@ func (s *Server) CrearRecurso(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
-	creado, err := s.Recursos.Crear(rec)
+	creado, err := s.deps.Recursos.Crear(rec)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -53,7 +53,7 @@ func (s *Server) ActualizarRecurso(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
-	actualizado, err := s.Recursos.Actualizar(id, datos)
+	actualizado, err := s.deps.Recursos.Actualizar(id, datos)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -67,7 +67,7 @@ func (s *Server) BorrarRecurso(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	if err := s.Recursos.Borrar(id); err != nil {
+	if err := s.deps.Recursos.Borrar(id); err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
 	}

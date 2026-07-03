@@ -26,7 +26,13 @@ func construirEntornoAsignaciones(t *testing.T) (http.Handler, string) {
 
 	asignacionSvc := service.NuevoAsignacionService(almacen)
 	authSvc := service.NuevoAuthService(usuarios)
-	srv := handlers.NewServer(nil, asignacionSvc, nil, nil, nil, nil, authSvc)
+
+	// --- CORRECCIÓN: Inyección mediante ServerDeps ---
+	deps := handlers.ServerDeps{
+		Asignaciones: asignacionSvc,
+		Auth:         authSvc,
+	}
+	srv := handlers.NewServer(deps)
 
 	r := chi.NewRouter()
 	r.Route("/api/v1", func(r chi.Router) {
@@ -81,15 +87,11 @@ func TestCrearAsignacion_IDsInvalidos(t *testing.T) {
 }
 
 // TestRutaAsignaciones_SinToken: sin Authorization el middleware devuelve 401.
-//
-// Qué se rompería: si se elimina r.Use(middleware.Auth(...)), la petición
-// llegaría al handler y respondería 201 en lugar de 401.
 func TestRutaAsignaciones_SinToken(t *testing.T) {
 	h, _ := construirEntornoAsignaciones(t)
 	body := `{"alerta_id":1,"recurso_id":3}`
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/asignaciones", strings.NewReader(body))
-	// A propósito: NO establecemos el header Authorization.
 	rec := httptest.NewRecorder()
 
 	h.ServeHTTP(rec, req)

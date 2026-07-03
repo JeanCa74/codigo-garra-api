@@ -11,7 +11,7 @@ import (
 )
 
 func (s *Server) ListarAlertas(w http.ResponseWriter, r *http.Request) {
-	RespondJSON(w, http.StatusOK, s.Alertas.Listar())
+	RespondJSON(w, http.StatusOK, s.deps.Alertas.Listar())
 }
 
 func (s *Server) ObtenerAlerta(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +20,7 @@ func (s *Server) ObtenerAlerta(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	alerta, err := s.Alertas.Obtener(id)
+	alerta, err := s.deps.Alertas.Obtener(id)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -34,7 +34,7 @@ func (s *Server) CrearAlerta(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
-	creada, err := s.Alertas.Crear(a)
+	creada, err := s.deps.Alertas.Crear(a)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -53,7 +53,7 @@ func (s *Server) ActualizarAlerta(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
-	actualizada, err := s.Alertas.Actualizar(id, datos)
+	actualizada, err := s.deps.Alertas.Actualizar(id, datos)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -67,7 +67,7 @@ func (s *Server) BorrarAlerta(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "id inválido")
 		return
 	}
-	if err := s.Alertas.Borrar(id); err != nil {
+	if err := s.deps.Alertas.Borrar(id); err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
 	}

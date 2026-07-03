@@ -19,7 +19,6 @@ import (
 )
 
 // construirEntornoRecursos arma el router con rutas de Recursos y middleware Auth real.
-// Reutiliza nuevoUsuarioRepoFake y registrarYObtenerToken definidos en alerta_handler_test.go.
 func construirEntornoRecursos(t *testing.T) (http.Handler, string) {
 	t.Helper()
 	almacen := storage.NuevaMemoria()
@@ -27,7 +26,13 @@ func construirEntornoRecursos(t *testing.T) (http.Handler, string) {
 
 	recursoSvc := service.NuevoRecursoService(almacen)
 	authSvc := service.NuevoAuthService(usuarios)
-	srv := handlers.NewServer(nil, nil, nil, recursoSvc, nil, nil, authSvc)
+
+	// --- CORRECCIÓN: Inyección mediante ServerDeps ---
+	deps := handlers.ServerDeps{
+		Recursos: recursoSvc,
+		Auth:     authSvc,
+	}
+	srv := handlers.NewServer(deps)
 
 	r := chi.NewRouter()
 	r.Route("/api/v1", func(r chi.Router) {

@@ -19,7 +19,6 @@ import (
 )
 
 // construirEntornoHistorial arma el router con rutas de HistorialMedico y middleware Auth real.
-// Reutiliza nuevoUsuarioRepoFake y registrarYObtenerToken definidos en alerta_handler_test.go.
 func construirEntornoHistorial(t *testing.T) (http.Handler, string) {
 	t.Helper()
 	almacen := storage.NuevaMemoria()
@@ -27,7 +26,13 @@ func construirEntornoHistorial(t *testing.T) (http.Handler, string) {
 
 	historialSvc := service.NuevoHistorialMedicoService(almacen)
 	authSvc := service.NuevoAuthService(usuarios)
-	srv := handlers.NewServer(nil, nil, nil, nil, nil, historialSvc, authSvc)
+
+	// --- CORRECCIÓN: Inyección mediante ServerDeps ---
+	deps := handlers.ServerDeps{
+		HistorialMed: historialSvc,
+		Auth:         authSvc,
+	}
+	srv := handlers.NewServer(deps)
 
 	r := chi.NewRouter()
 	r.Route("/api/v1", func(r chi.Router) {
@@ -79,15 +84,11 @@ func TestCrearHistorial_DiagnosticoVacio(t *testing.T) {
 }
 
 // TestRutaHistorial_SinToken: sin Authorization el middleware devuelve 401.
-//
-// Qué se rompería: si se elimina r.Use(middleware.Auth(...)), la petición
-// llegaría al handler y respondería 201 en lugar de 401.
 func TestRutaHistorial_SinToken(t *testing.T) {
 	h, _ := construirEntornoHistorial(t)
 	body := `{"mascota_id":1,"diagnostico":"Infección","fecha":"2026-07-01"}`
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/historial", strings.NewReader(body))
-	// A propósito: NO establecemos el header Authorization.
 	rec := httptest.NewRecorder()
 
 	h.ServeHTTP(rec, req)

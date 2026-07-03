@@ -14,7 +14,7 @@ func (s *Server) Registrar(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
-	u, err := s.Auth.Registrar(body.Email, body.Password)
+	u, err := s.deps.Auth.Registrar(body.Email, body.Password)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return
@@ -31,7 +31,7 @@ func (s *Server) Login(w http.ResponseWriter, r *http.Request) {
 		RespondError(w, http.StatusBadRequest, "cuerpo JSON inválido")
 		return
 	}
-	token, err := s.Auth.Login(body.Email, body.Password)
+	token, err := s.deps.Auth.Login(body.Email, body.Password)
 	if err != nil {
 		RespondError(w, statusDeError(err), err.Error())
 		return

@@ -21,24 +21,19 @@ func main() {
 	}
 
 	// 2. Capa de servicio — un servicio por entidad del dominio.
-	alertaSvc := service.NuevoAlertaService(almacen)
-	asignacionSvc := service.NuevoAsignacionService(almacen)
-	perfilSvc := service.NuevoPerfilVeterinarioService(almacen)
-	recursoSvc := service.NuevoRecursoService(almacen)
-	mascotaSvc := service.NuevoMascotaService(almacen)
-	historialSvc := service.NuevoHistorialMedicoService(almacen)
-	authSvc := service.NuevoAuthService(almacen)
+	// Agrupamos todo en el struct ServerDeps para inyección de dependencias limpia.
+	deps := handlers.ServerDeps{
+		Alertas:      service.NuevoAlertaService(almacen),
+		Asignaciones: service.NuevoAsignacionService(almacen),
+		Perfiles:     service.NuevoPerfilVeterinarioService(almacen),
+		Recursos:     service.NuevoRecursoService(almacen),
+		Mascotas:     service.NuevoMascotaService(almacen),
+		HistorialMed: service.NuevoHistorialMedicoService(almacen),
+		Auth:         service.NuevoAuthService(almacen),
+	}
 
-	// 3. Server con los 7 servicios inyectados.
-	servidor := handlers.NewServer(
-		alertaSvc,
-		asignacionSvc,
-		perfilSvc,
-		recursoSvc,
-		mascotaSvc,
-		historialSvc,
-		authSvc,
-	)
+	// 3. Server con dependencias inyectadas (Refactor: Constructor único).
+	servidor := handlers.NewServer(deps)
 
 	// 4. Router + middleware global.
 	r := chi.NewRouter()
@@ -54,7 +49,8 @@ func main() {
 
 		// Protegidas: exigen JWT válido en Authorization: Bearer <token>.
 		r.Group(func(r chi.Router) {
-			r.Use(middleware.Auth(authSvc))
+			// Usamos deps.Auth porque el servicio ya está dentro del struct.
+			r.Use(middleware.Auth(deps.Auth))
 
 			// ── Módulo Jean Carlos — Emergencia médica ──────────────────────
 			r.Get("/alertas", servidor.ListarAlertas)

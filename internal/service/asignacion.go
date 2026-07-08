@@ -54,6 +54,10 @@ func (s *AsignacionService) Borrar(id int) error {
 	return nil
 }
 
+func (s *AsignacionService) ListarPorAlerta(alertaID int) []models.AsignacionTriage {
+	return s.repo.ListarAsignacionesPorAlerta(alertaID)
+}
+
 // validarAsignacion aplica las reglas del módulo de enrutamiento y matching.
 // Regla: alerta_id y recurso_id deben ser mayores a cero para que el match sea válido.
 func validarAsignacion(a models.AsignacionTriage) error {

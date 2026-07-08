@@ -43,13 +43,13 @@ func NuevoAlmacenGORM(dsn string) (*AlmacenGORM, error) {
 
 func (a *AlmacenGORM) ListarAlertas() []models.AlertaEmergencia {
 	var alertas []models.AlertaEmergencia
-	a.db.Find(&alertas)
+	a.db.Preload("Mascota").Find(&alertas)
 	return alertas
 }
 
 func (a *AlmacenGORM) BuscarAlertaPorID(id int) (models.AlertaEmergencia, bool) {
 	var alerta models.AlertaEmergencia
-	if err := a.db.First(&alerta, id).Error; err != nil {
+	if err := a.db.Preload("Mascota").First(&alerta, id).Error; err != nil {
 		return models.AlertaEmergencia{}, false
 	}
 	return alerta, true
@@ -69,8 +69,15 @@ func (a *AlmacenGORM) ActualizarAlerta(id int, datos models.AlertaEmergencia) (m
 		return models.AlertaEmergencia{}, false
 	}
 	datos.ID = id
+	datos.CreadoEn = existente.CreadoEn // preservar timestamp de creación
 	a.db.Save(&datos)
 	return datos, true
+}
+
+func (a *AlmacenGORM) ListarAsignacionesPorAlerta(alertaID int) []models.AsignacionTriage {
+	var asignaciones []models.AsignacionTriage
+	a.db.Where("alerta_id = ?", alertaID).Find(&asignaciones)
+	return asignaciones
 }
 
 func (a *AlmacenGORM) BorrarAlerta(id int) bool {

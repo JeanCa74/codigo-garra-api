@@ -25,19 +25,20 @@ func Sembrar(almacen storage.Almacen, usuarios storage.UserRepository, authSvc *
 		return err
 	}
 
+	// Clínicas con ubicaciones reales de Manta, Ecuador
 	p1 := almacen.CrearPerfil(models.PerfilVeterinario{
-		Nombre: "Clínica Garra Norte", Telefono: "+56912345678",
-		Direccion: "Av. Providencia 1234, Santiago", Activo: true,
+		Nombre: "Clínica Veterinaria Los Ceibos", Telefono: "+593992345678",
+		Direccion: "Av. 4 de Noviembre y Calle 14, Manta", Activo: true,
 	})
 	p2 := almacen.CrearPerfil(models.PerfilVeterinario{
-		Nombre: "Veterinaria El Bosque", Telefono: "+56987654321",
-		Direccion: "Av. Las Condes 5678, Santiago", Activo: true,
+		Nombre: "VetCare Manta", Telefono: "+593987654321",
+		Direccion: "Av. Flavio Alfaro y Av. 24, Manta", Activo: true,
 	})
 
 	almacen.CrearRecurso(models.RecursoClinico{
 		PerfilID: p1.ID, TipoMaquina: "Ecógrafo portátil", EstaDisponible: true,
 	})
-	almacen.CrearRecurso(models.RecursoClinico{
+	r2 := almacen.CrearRecurso(models.RecursoClinico{
 		PerfilID: p1.ID, TipoMaquina: "Ventilador mecánico", EstaDisponible: true,
 	})
 	almacen.CrearRecurso(models.RecursoClinico{
@@ -45,30 +46,34 @@ func Sembrar(almacen storage.Almacen, usuarios storage.UserRepository, authSvc *
 	})
 
 	m1 := almacen.CrearMascota(models.Mascota{
-		Nombre: "Max", Especie: "Perro", Edad: 3, Dueno: "Ana García",
+		Nombre: "Rex", Especie: "Perro", Edad: 4, Dueno: "Gabriela Vera",
 	})
 	m2 := almacen.CrearMascota(models.Mascota{
-		Nombre: "Luna", Especie: "Gato", Edad: 5, Dueno: "Carlos López",
+		Nombre: "Michi", Especie: "Gato", Edad: 2, Dueno: "Juan Cedeño",
 	})
 
 	almacen.CrearHistorial(models.HistorialMedico{
-		MascotaID: m1.ID, Diagnostico: "Fractura en pata delantera",
-		Tratamiento: "Inmovilización y analgésicos", Fecha: "2026-06-15", Veterinario: "Dra. Pérez",
+		MascotaID: m1.ID, Diagnostico: "Trauma abdominal por atropellamiento",
+		Tratamiento: "Cirugía de urgencia + analgésicos", Fecha: "2026-07-01", Veterinario: "Dra. Vélez",
 	})
 	almacen.CrearHistorial(models.HistorialMedico{
-		MascotaID: m2.ID, Diagnostico: "Infección respiratoria aguda",
-		Tratamiento: "Antibióticos 7 días", Fecha: "2026-07-01", Veterinario: "Dr. Soto",
+		MascotaID: m2.ID, Diagnostico: "Insuficiencia respiratoria aguda",
+		Tratamiento: "Nebulización y antibióticos 7 días", Fecha: "2026-07-05", Veterinario: "Dr. Rivadeneira",
 	})
 
-	almacen.CrearAlerta(models.AlertaEmergencia{
-		Gravedad: 5, Requerimiento: "Necesita ventilador mecánico urgente", Estado: "Buscando",
+	// Alerta activa: Rex atropellado — vinculada al paciente registrado
+	a1 := almacen.CrearAlerta(models.AlertaEmergencia{
+		MascotaID: m1.ID, Gravedad: 5,
+		Requerimiento: "Ventilador mecánico urgente — perro atropellado", Estado: "Buscando",
 	})
 	almacen.CrearAlerta(models.AlertaEmergencia{
-		Gravedad: 3, Requerimiento: "Requiere ecógrafo para diagnóstico", Estado: "Atendido",
+		MascotaID: m2.ID, Gravedad: 3,
+		Requerimiento: "Ecógrafo para diagnóstico respiratorio", Estado: "Atendido",
 	})
 
+	// Recurso ya asignado a la emergencia crítica
 	almacen.CrearAsignacion(models.AsignacionTriage{
-		AlertaID: 1, RecursoID: 2, EstadoConfirmacion: "Confirmado",
+		AlertaID: a1.ID, RecursoID: r2.ID, EstadoConfirmacion: "Confirmado",
 	})
 
 	log.Println("seeder: datos iniciales sembrados correctamente")

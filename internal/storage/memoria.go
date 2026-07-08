@@ -2,6 +2,7 @@ package storage
 
 import (
 	"sync"
+	"time"
 
 	"github.com/JeanCa74/codigo-garra-api/internal/models"
 )
@@ -50,9 +51,10 @@ func NuevaMemoria() *Memoria {
 func (m *Memoria) SeedAlertas() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	now := time.Now()
 	m.alertas = []models.AlertaEmergencia{
-		{ID: 1, Gravedad: 3, Requerimiento: "Ecógrafo", Estado: "Buscando"},
-		{ID: 2, Gravedad: 5, Requerimiento: "Ventilador", Estado: "Asignada"},
+		{ID: 1, Gravedad: 3, Requerimiento: "Ecógrafo", Estado: "Buscando", CreadoEn: now.Add(-30 * time.Minute)},
+		{ID: 2, Gravedad: 5, Requerimiento: "Ventilador", Estado: "Asignada", CreadoEn: now.Add(-5 * time.Minute)},
 	}
 	m.nextAlertaID = 3
 }
@@ -88,6 +90,7 @@ func (m *Memoria) CrearAlerta(a models.AlertaEmergencia) models.AlertaEmergencia
 	if a.Estado == "" {
 		a.Estado = "Buscando"
 	}
+	a.CreadoEn = time.Now()
 	m.alertas = append(m.alertas, a)
 	return a
 }
@@ -98,6 +101,7 @@ func (m *Memoria) ActualizarAlerta(id int, datos models.AlertaEmergencia) (model
 	for i, a := range m.alertas {
 		if a.ID == id {
 			datos.ID = id
+			datos.CreadoEn = a.CreadoEn // preservar timestamp de creación
 			m.alertas[i] = datos
 			return datos, true
 		}
@@ -175,6 +179,18 @@ func (m *Memoria) BorrarAsignacion(id int) bool {
 		}
 	}
 	return false
+}
+
+func (m *Memoria) ListarAsignacionesPorAlerta(alertaID int) []models.AsignacionTriage {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	var resultado []models.AsignacionTriage
+	for _, a := range m.asignaciones {
+		if a.AlertaID == alertaID {
+			resultado = append(resultado, a)
+		}
+	}
+	return resultado
 }
 
 // =========================================================

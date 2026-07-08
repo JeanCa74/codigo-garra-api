@@ -75,6 +75,8 @@ func main() {
 			r.Get("/alertas/{id}", servidor.ObtenerAlerta)
 			r.Put("/alertas/{id}", servidor.ActualizarAlerta)
 
+			r.Get("/alertas/{id}/asignaciones", servidor.ListarAsignacionesDeAlerta)
+
 			r.Get("/asignaciones", servidor.ListarAsignaciones)
 			r.Post("/asignaciones", servidor.CrearAsignacion)
 			r.Get("/asignaciones/{id}", servidor.ObtenerAsignacion)

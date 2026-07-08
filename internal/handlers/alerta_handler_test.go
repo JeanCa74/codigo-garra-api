@@ -69,12 +69,13 @@ func construirEntornoAlertas(t *testing.T) (http.Handler, string) {
 	usuarios := nuevoUsuarioRepoFake()
 
 	alertaSvc := service.NuevoAlertaService(almacen)
+	asignacionSvc := service.NuevoAsignacionService(almacen)
 	authSvc := service.NuevoAuthService(usuarios)
 
-	// --- CORRECCIÓN: Inyección mediante ServerDeps ---
 	deps := handlers.ServerDeps{
-		Alertas: alertaSvc,
-		Auth:    authSvc,
+		Alertas:      alertaSvc,
+		Asignaciones: asignacionSvc,
+		Auth:         authSvc,
 	}
 	srv := handlers.NewServer(deps)
 
@@ -90,6 +91,7 @@ func construirEntornoAlertas(t *testing.T) (http.Handler, string) {
 			r.Get("/alertas/{id}", srv.ObtenerAlerta)
 			r.Put("/alertas/{id}", srv.ActualizarAlerta)
 			r.Delete("/alertas/{id}", srv.BorrarAlerta)
+			r.Get("/alertas/{id}/asignaciones", srv.ListarAsignacionesDeAlerta)
 		})
 	})
 
@@ -185,6 +187,23 @@ func TestObtenerAlerta_NoExiste(t *testing.T) {
 	h.ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+// TestListarAsignacionesDeAlerta: GET /alertas/1/asignaciones devuelve 200 con array.
+func TestListarAsignacionesDeAlerta(t *testing.T) {
+	h, token := construirEntornoAlertas(t)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/alertas/1/asignaciones", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	assert.Contains(t, rec.Header().Get("Content-Type"), "application/json")
+	var asignaciones []models.AsignacionTriage
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&asignaciones))
+	assert.NotNil(t, asignaciones)
 }
 
 // TestActualizarAlerta_Exitosa: PUT /alertas/1 con datos válidos devuelve 200.

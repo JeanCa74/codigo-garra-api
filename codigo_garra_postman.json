@@ -107,7 +107,7 @@
           }
         },
         {
-          "name": "Crear alerta",
+          "name": "Crear alerta (con mascota vinculada)",
           "request": {
             "method": "POST",
             "header": [
@@ -116,7 +116,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"gravedad\": 5,\n  \"requerimiento\": \"Necesita ventilador mecánico urgente\",\n  \"estado\": \"Buscando\"\n}"
+              "raw": "{\n  \"mascota_id\": 1,\n  \"gravedad\": 5,\n  \"requerimiento\": \"Ventilador mecánico urgente — perro atropellado en Manta\",\n  \"estado\": \"Buscando\"\n}"
             },
             "url": "{{baseUrl}}/alertas"
           }
@@ -127,6 +127,15 @@
             "method": "GET",
             "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
             "url": "{{baseUrl}}/alertas/1"
+          }
+        },
+        {
+          "name": "Ver recursos asignados a la alerta",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/alertas/1/asignaciones",
+            "description": "Responde qué recursos clínicos responden a esta emergencia. [] si aún no hay asignaciones."
           }
         },
         {
@@ -242,7 +251,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Clínica Garra Norte\",\n  \"telefono\": \"+56912345678\",\n  \"direccion\": \"Av. Providencia 1234\",\n  \"activo\": true\n}"
+              "raw": "{\n  \"nombre\": \"VetUrgencias Manta\",\n  \"telefono\": \"+593995551234\",\n  \"direccion\": \"Av. 4 de Noviembre y Calle 22, Manta\",\n  \"activo\": true\n}"
             },
             "url": "{{baseUrl}}/veterinarios"
           }
@@ -265,7 +274,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Clínica Garra Norte\",\n  \"telefono\": \"+56912345678\",\n  \"direccion\": \"Av. Providencia 1234\",\n  \"activo\": false\n}"
+              "raw": "{\n  \"nombre\": \"VetUrgencias Manta\",\n  \"telefono\": \"+593995551234\",\n  \"direccion\": \"Av. 4 de Noviembre y Calle 22, Manta\",\n  \"activo\": false\n}"
             },
             "url": "{{baseUrl}}/veterinarios/1"
           }

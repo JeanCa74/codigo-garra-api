@@ -73,3 +73,18 @@ func (s *Server) BorrarAlerta(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusNoContent)
 }
+
+// ListarAsignacionesDeAlerta devuelve todos los recursos asignados a una alerta concreta.
+// Responde [] (array vacío) cuando la alerta no tiene asignaciones aún.
+func (s *Server) ListarAsignacionesDeAlerta(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		RespondError(w, http.StatusBadRequest, "id inválido")
+		return
+	}
+	asignaciones := s.deps.Asignaciones.ListarPorAlerta(id)
+	if asignaciones == nil {
+		asignaciones = []models.AsignacionTriage{}
+	}
+	RespondJSON(w, http.StatusOK, asignaciones)
+}

@@ -34,6 +34,9 @@ func (m *asignacionRepoMock) ActualizarAsignacion(id int, datos models.Asignacio
 func (m *asignacionRepoMock) BorrarAsignacion(id int) bool {
 	return m.Called(id).Bool(0)
 }
+func (m *asignacionRepoMock) ListarAsignacionesPorAlerta(alertaID int) []models.AsignacionTriage {
+	return m.Called(alertaID).Get(0).([]models.AsignacionTriage)
+}
 
 var _ storage.AsignacionRepository = (*asignacionRepoMock)(nil)
 

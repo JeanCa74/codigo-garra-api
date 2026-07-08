@@ -18,6 +18,7 @@ type AsignacionRepository interface {
 	CrearAsignacion(a models.AsignacionTriage) models.AsignacionTriage
 	ActualizarAsignacion(id int, datos models.AsignacionTriage) (models.AsignacionTriage, bool)
 	BorrarAsignacion(id int) bool
+	ListarAsignacionesPorAlerta(alertaID int) []models.AsignacionTriage
 }
 
 // ── Módulo John Erick: Perfil veterinario ─────────────────────────────────

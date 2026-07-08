@@ -1,5 +1,5 @@
 # ── Stage 1: builder ─────────────────────────────────────────────────────────
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
@@ -13,9 +13,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /app/garra-api ./cmd/m
 
 # ── Stage 2: runner ───────────────────────────────────────────────────────────
 FROM alpine:3.19 AS runner
-
-# Certificados para HTTPS y zona horaria
-RUN apk add --no-cache ca-certificates tzdata
 
 WORKDIR /app
 

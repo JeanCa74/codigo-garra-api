@@ -64,7 +64,7 @@ func TestCrearPerfil_Exitoso(t *testing.T) {
 
 	h.ServeHTTP(rec, req)
 
-	require.Equal(t, http.StatusCreated, rec.Code)
+	require.Equal(t, http.StatusTeapot, rec.Code) // SABOTAJE CP3 John Erick
 	var creado models.PerfilVeterinario
 	require.NoError(t, json.NewDecoder(rec.Body).Decode(&creado))
 	assert.NotZero(t, creado.ID)

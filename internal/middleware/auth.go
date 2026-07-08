@@ -1,13 +1,19 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
 	"github.com/JeanCa74/codigo-garra-api/internal/service"
 )
 
-// Auth valida el Bearer token JWT. Si falta o es inválido responde 401 y corta.
+type contextKey string
+
+const ctxRol contextKey = "rol"
+
+// Auth valida el Bearer token JWT. Extrae el claim "rol" y lo almacena en el contexto.
+// Responde 401 y corta si el token está ausente o es inválido.
 func Auth(auth *service.AuthService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -16,12 +22,15 @@ func Auth(auth *service.AuthService) func(http.Handler) http.Handler {
 				responderNoAutorizado(w)
 				return
 			}
-			token := strings.TrimPrefix(header, "Bearer ")
-			if !auth.ValidarToken(token) {
+			tokenStr := strings.TrimPrefix(header, "Bearer ")
+			claims, ok := auth.ValidarToken(tokenStr)
+			if !ok {
 				responderNoAutorizado(w)
 				return
 			}
-			next.ServeHTTP(w, r)
+			rol, _ := claims["rol"].(string)
+			ctx := context.WithValue(r.Context(), ctxRol, rol)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }

@@ -98,3 +98,65 @@ func TestRutaAsignaciones_SinToken(t *testing.T) {
 
 	assert.Equal(t, http.StatusUnauthorized, rec.Code)
 }
+
+// TestListarAsignaciones_Exitoso: GET /asignaciones con token devuelve 200.
+func TestListarAsignaciones_Exitoso(t *testing.T) {
+	h, token := construirEntornoAsignaciones(t)
+	// Crear una asignación primero.
+	bodyCreate := `{"alerta_id":1,"recurso_id":2,"estado_confirmacion":"Pendiente"}`
+	reqCreate := httptest.NewRequest(http.MethodPost, "/api/v1/asignaciones", strings.NewReader(bodyCreate))
+	reqCreate.Header.Set("Authorization", "Bearer "+token)
+	h.ServeHTTP(httptest.NewRecorder(), reqCreate)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/asignaciones", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var asignaciones []models.AsignacionTriage
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&asignaciones))
+	assert.GreaterOrEqual(t, len(asignaciones), 1)
+}
+
+// TestObtenerAsignacion_PorID: crea una asignación y la obtiene por ID → 200.
+func TestObtenerAsignacion_PorID(t *testing.T) {
+	h, token := construirEntornoAsignaciones(t)
+	bodyCreate := `{"alerta_id":3,"recurso_id":4,"estado_confirmacion":"Pendiente"}`
+	reqCreate := httptest.NewRequest(http.MethodPost, "/api/v1/asignaciones", strings.NewReader(bodyCreate))
+	reqCreate.Header.Set("Authorization", "Bearer "+token)
+	h.ServeHTTP(httptest.NewRecorder(), reqCreate)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/asignaciones/1", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var asig models.AsignacionTriage
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&asig))
+	assert.Equal(t, 1, asig.ID)
+}
+
+// TestActualizarAsignacion_Exitosa: crea una asignación y la actualiza → 200.
+func TestActualizarAsignacion_Exitosa(t *testing.T) {
+	h, token := construirEntornoAsignaciones(t)
+	bodyCreate := `{"alerta_id":1,"recurso_id":2,"estado_confirmacion":"Pendiente"}`
+	reqCreate := httptest.NewRequest(http.MethodPost, "/api/v1/asignaciones", strings.NewReader(bodyCreate))
+	reqCreate.Header.Set("Authorization", "Bearer "+token)
+	h.ServeHTTP(httptest.NewRecorder(), reqCreate)
+
+	bodyUpdate := `{"alerta_id":1,"recurso_id":2,"estado_confirmacion":"Confirmado"}`
+	req := httptest.NewRequest(http.MethodPut, "/api/v1/asignaciones/1", strings.NewReader(bodyUpdate))
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var actualizada models.AsignacionTriage
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&actualizada))
+	assert.Equal(t, "Confirmado", actualizada.EstadoConfirmacion)
+}

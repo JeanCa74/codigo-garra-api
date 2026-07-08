@@ -98,3 +98,68 @@ func TestRutaPerfiles_SinToken(t *testing.T) {
 
 	assert.Equal(t, http.StatusUnauthorized, rec.Code)
 }
+
+// TestListarPerfiles_Exitoso: GET /veterinarios devuelve 200 con el array de perfiles.
+func TestListarPerfiles_Exitoso(t *testing.T) {
+	h, token := construirEntornoPerfiles(t)
+	// Crear un perfil primero para que el listado no esté vacío.
+	bodyCreate := `{"nombre":"Clínica Lista","telefono":"111222333","activo":true}`
+	reqCreate := httptest.NewRequest(http.MethodPost, "/api/v1/veterinarios", strings.NewReader(bodyCreate))
+	reqCreate.Header.Set("Authorization", "Bearer "+token)
+	h.ServeHTTP(httptest.NewRecorder(), reqCreate)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/veterinarios", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var perfiles []models.PerfilVeterinario
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&perfiles))
+	assert.GreaterOrEqual(t, len(perfiles), 1)
+}
+
+// TestObtenerPerfil_PorID: crea un perfil y lo obtiene por ID → 200.
+func TestObtenerPerfil_PorID(t *testing.T) {
+	h, token := construirEntornoPerfiles(t)
+	bodyCreate := `{"nombre":"Clínica Obtener","telefono":"444555666","activo":true}`
+	reqCreate := httptest.NewRequest(http.MethodPost, "/api/v1/veterinarios", strings.NewReader(bodyCreate))
+	reqCreate.Header.Set("Authorization", "Bearer "+token)
+	recCreate := httptest.NewRecorder()
+	h.ServeHTTP(recCreate, reqCreate)
+	require.Equal(t, http.StatusCreated, recCreate.Code)
+
+	// El primer perfil creado en memoria siempre tiene ID 1.
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/veterinarios/1", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var perfil models.PerfilVeterinario
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&perfil))
+	assert.Equal(t, "Clínica Obtener", perfil.Nombre)
+}
+
+// TestActualizarPerfil_Exitoso: crea un perfil y lo actualiza → 200.
+func TestActualizarPerfil_Exitoso(t *testing.T) {
+	h, token := construirEntornoPerfiles(t)
+	bodyCreate := `{"nombre":"Clínica Original","telefono":"777888999","activo":true}`
+	reqCreate := httptest.NewRequest(http.MethodPost, "/api/v1/veterinarios", strings.NewReader(bodyCreate))
+	reqCreate.Header.Set("Authorization", "Bearer "+token)
+	h.ServeHTTP(httptest.NewRecorder(), reqCreate)
+
+	bodyUpdate := `{"nombre":"Clínica Actualizada","telefono":"777888999","activo":false}`
+	req := httptest.NewRequest(http.MethodPut, "/api/v1/veterinarios/1", strings.NewReader(bodyUpdate))
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var actualizado models.PerfilVeterinario
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&actualizado))
+	assert.Equal(t, "Clínica Actualizada", actualizado.Nombre)
+}

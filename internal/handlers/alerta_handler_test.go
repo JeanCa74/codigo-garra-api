@@ -141,3 +141,65 @@ func TestRutaAlertas_SinToken(t *testing.T) {
 
 	assert.Equal(t, http.StatusUnauthorized, rec.Code)
 }
+
+// TestListarAlertas_Exitoso: GET /alertas con token válido devuelve 200 y el array de alertas.
+func TestListarAlertas_Exitoso(t *testing.T) {
+	h, token := construirEntornoAlertas(t) // SeedAlertas carga 2 alertas
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/alertas", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var alertas []models.AlertaEmergencia
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&alertas))
+	assert.GreaterOrEqual(t, len(alertas), 2)
+}
+
+// TestObtenerAlerta_Exitoso: GET /alertas/1 con token devuelve 200 y la alerta correcta.
+func TestObtenerAlerta_Exitoso(t *testing.T) {
+	h, token := construirEntornoAlertas(t)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/alertas/1", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var alerta models.AlertaEmergencia
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&alerta))
+	assert.Equal(t, 1, alerta.ID)
+}
+
+// TestObtenerAlerta_NoExiste: GET /alertas/999 devuelve 404.
+func TestObtenerAlerta_NoExiste(t *testing.T) {
+	h, token := construirEntornoAlertas(t)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/alertas/999", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
+}
+
+// TestActualizarAlerta_Exitosa: PUT /alertas/1 con datos válidos devuelve 200.
+func TestActualizarAlerta_Exitosa(t *testing.T) {
+	h, token := construirEntornoAlertas(t)
+	body := `{"gravedad":5,"requerimiento":"Ventilador mecánico crítico","estado":"Atendido"}`
+
+	req := httptest.NewRequest(http.MethodPut, "/api/v1/alertas/1", strings.NewReader(body))
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var actualizada models.AlertaEmergencia
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&actualizada))
+	assert.Equal(t, "Atendido", actualizada.Estado)
+}

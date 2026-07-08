@@ -101,3 +101,44 @@ func TestHistorialMedicoService_Crear(t *testing.T) {
 		})
 	}
 }
+
+// TestHistorialMedicoService_Listar verifica la delegación correcta al repositorio.
+func TestHistorialMedicoService_Listar(t *testing.T) {
+	repo := new(historialRepoMock)
+	esperado := []models.HistorialMedico{
+		{ID: 1, MascotaID: 1, Diagnostico: "Gastritis leve", Fecha: "2026-07-01"},
+	}
+	repo.On("ListarHistorial").Return(esperado)
+
+	svc := service.NuevoHistorialMedicoService(repo)
+	resultado := svc.Listar()
+
+	assert.Equal(t, 1, len(resultado))
+	repo.AssertExpectations(t)
+}
+
+// TestHistorialMedicoService_ObtenerPorID cubre entrada existente e inexistente.
+func TestHistorialMedicoService_ObtenerPorID(t *testing.T) {
+	t.Run("historial existente -> devuelve entrada sin error", func(t *testing.T) {
+		repo := new(historialRepoMock)
+		entrada := models.HistorialMedico{ID: 1, MascotaID: 1, Diagnostico: "Gastritis", Fecha: "2026-07-01"}
+		repo.On("BuscarHistorialPorID", 1).Return(entrada, true)
+
+		svc := service.NuevoHistorialMedicoService(repo)
+		resultado, err := svc.ObtenerPorID(1)
+
+		require.NoError(t, err)
+		assert.Equal(t, "Gastritis", resultado.Diagnostico)
+		repo.AssertExpectations(t)
+	})
+	t.Run("historial inexistente -> ErrNoEncontrado", func(t *testing.T) {
+		repo := new(historialRepoMock)
+		repo.On("BuscarHistorialPorID", 99).Return(models.HistorialMedico{}, false)
+
+		svc := service.NuevoHistorialMedicoService(repo)
+		_, err := svc.ObtenerPorID(99)
+
+		require.ErrorIs(t, err, service.ErrNoEncontrado)
+		repo.AssertExpectations(t)
+	})
+}

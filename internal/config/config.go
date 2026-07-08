@@ -7,15 +7,17 @@ import (
 )
 
 type Config struct {
-	Port   string
-	DBPath string
+	Port        string
+	DBPath      string
+	DatabaseURL string // PostgreSQL DSN — si se define, tiene prioridad sobre DBPath
 }
 
 func Load() Config {
 	_ = godotenv.Load()
 	return Config{
-		Port:   getEnv("PORT", ":8080"),
-		DBPath: getEnv("DB_PATH", "garra.db"),
+		Port:        getEnv("PORT", ":8080"),
+		DBPath:      getEnv("DB_PATH", "garra.db"),
+		DatabaseURL: getEnv("DATABASE_URL", ""),
 	}
 }
 

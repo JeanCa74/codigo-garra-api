@@ -97,3 +97,64 @@ func TestRutaRecursos_SinToken(t *testing.T) {
 
 	assert.Equal(t, http.StatusUnauthorized, rec.Code)
 }
+
+// TestListarRecursos_Exitoso: GET /recursos con token devuelve 200.
+func TestListarRecursos_Exitoso(t *testing.T) {
+	h, token := construirEntornoRecursos(t)
+	bodyCreate := `{"perfil_id":1,"tipo_maquina":"Ecógrafo","esta_disponible":true}`
+	reqCreate := httptest.NewRequest(http.MethodPost, "/api/v1/recursos", strings.NewReader(bodyCreate))
+	reqCreate.Header.Set("Authorization", "Bearer "+token)
+	h.ServeHTTP(httptest.NewRecorder(), reqCreate)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/recursos", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var recursos []models.RecursoClinico
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&recursos))
+	assert.GreaterOrEqual(t, len(recursos), 1)
+}
+
+// TestObtenerRecurso_PorID: crea un recurso y lo obtiene por ID → 200.
+func TestObtenerRecurso_PorID(t *testing.T) {
+	h, token := construirEntornoRecursos(t)
+	bodyCreate := `{"perfil_id":2,"tipo_maquina":"Desfibrilador","esta_disponible":false}`
+	reqCreate := httptest.NewRequest(http.MethodPost, "/api/v1/recursos", strings.NewReader(bodyCreate))
+	reqCreate.Header.Set("Authorization", "Bearer "+token)
+	h.ServeHTTP(httptest.NewRecorder(), reqCreate)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/recursos/1", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var recurso models.RecursoClinico
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&recurso))
+	assert.Equal(t, "Desfibrilador", recurso.TipoMaquina)
+}
+
+// TestActualizarRecurso_Exitoso: crea un recurso y lo actualiza → 200.
+func TestActualizarRecurso_Exitoso(t *testing.T) {
+	h, token := construirEntornoRecursos(t)
+	bodyCreate := `{"perfil_id":1,"tipo_maquina":"Ecógrafo","esta_disponible":true}`
+	reqCreate := httptest.NewRequest(http.MethodPost, "/api/v1/recursos", strings.NewReader(bodyCreate))
+	reqCreate.Header.Set("Authorization", "Bearer "+token)
+	h.ServeHTTP(httptest.NewRecorder(), reqCreate)
+
+	bodyUpdate := `{"perfil_id":1,"tipo_maquina":"Ecógrafo 4K","esta_disponible":false}`
+	req := httptest.NewRequest(http.MethodPut, "/api/v1/recursos/1", strings.NewReader(bodyUpdate))
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+
+	h.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var actualizado models.RecursoClinico
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&actualizado))
+	assert.Equal(t, "Ecógrafo 4K", actualizado.TipoMaquina)
+}

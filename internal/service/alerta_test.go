@@ -100,3 +100,94 @@ func TestAlertaService_Crear(t *testing.T) {
 		})
 	}
 }
+
+// TestAlertaService_Listar verifica que el servicio delega correctamente al repositorio.
+func TestAlertaService_Listar(t *testing.T) {
+	repo := new(alertaRepoMock)
+	esperado := []models.AlertaEmergencia{
+		{ID: 1, Gravedad: 3, Requerimiento: "Ecógrafo", Estado: "Buscando"},
+		{ID: 2, Gravedad: 5, Requerimiento: "Ventilador", Estado: "Asignada"},
+	}
+	repo.On("ListarAlertas").Return(esperado)
+
+	svc := service.NuevoAlertaService(repo)
+	resultado := svc.Listar()
+
+	assert.Equal(t, 2, len(resultado))
+	repo.AssertExpectations(t)
+}
+
+// TestAlertaService_Obtener cubre el camino feliz (existe) y el triste (no existe).
+func TestAlertaService_Obtener(t *testing.T) {
+	t.Run("alerta existente -> devuelve alerta sin error", func(t *testing.T) {
+		repo := new(alertaRepoMock)
+		alerta := models.AlertaEmergencia{ID: 1, Gravedad: 3, Requerimiento: "Ecógrafo", Estado: "Buscando"}
+		repo.On("BuscarAlertaPorID", 1).Return(alerta, true)
+
+		svc := service.NuevoAlertaService(repo)
+		resultado, err := svc.Obtener(1)
+
+		require.NoError(t, err)
+		assert.Equal(t, alerta, resultado)
+		repo.AssertExpectations(t)
+	})
+	t.Run("alerta inexistente -> ErrNoEncontrado", func(t *testing.T) {
+		repo := new(alertaRepoMock)
+		repo.On("BuscarAlertaPorID", 99).Return(models.AlertaEmergencia{}, false)
+
+		svc := service.NuevoAlertaService(repo)
+		_, err := svc.Obtener(99)
+
+		require.ErrorIs(t, err, service.ErrNoEncontrado)
+		repo.AssertExpectations(t)
+	})
+}
+
+// TestAlertaService_Actualizar cubre actualización exitosa y registro inexistente.
+func TestAlertaService_Actualizar(t *testing.T) {
+	t.Run("datos validos y alerta existente -> devuelve actualizada", func(t *testing.T) {
+		repo := new(alertaRepoMock)
+		datos := models.AlertaEmergencia{Gravedad: 4, Requerimiento: "Ventilador", Estado: "Atendido"}
+		actualizada := datos
+		actualizada.ID = 1
+		repo.On("ActualizarAlerta", 1, datos).Return(actualizada, true)
+
+		svc := service.NuevoAlertaService(repo)
+		resultado, err := svc.Actualizar(1, datos)
+
+		require.NoError(t, err)
+		assert.Equal(t, 1, resultado.ID)
+		repo.AssertExpectations(t)
+	})
+	t.Run("alerta inexistente -> ErrNoEncontrado", func(t *testing.T) {
+		repo := new(alertaRepoMock)
+		datos := models.AlertaEmergencia{Gravedad: 2, Requerimiento: "Ecógrafo", Estado: "Buscando"}
+		repo.On("ActualizarAlerta", 99, datos).Return(models.AlertaEmergencia{}, false)
+
+		svc := service.NuevoAlertaService(repo)
+		_, err := svc.Actualizar(99, datos)
+
+		require.ErrorIs(t, err, service.ErrNoEncontrado)
+		repo.AssertExpectations(t)
+	})
+}
+
+// TestAlertaService_Borrar cubre eliminación exitosa y registro inexistente.
+func TestAlertaService_Borrar(t *testing.T) {
+	t.Run("alerta existente -> nil", func(t *testing.T) {
+		repo := new(alertaRepoMock)
+		repo.On("BorrarAlerta", 1).Return(true)
+
+		svc := service.NuevoAlertaService(repo)
+		require.NoError(t, svc.Borrar(1))
+		repo.AssertExpectations(t)
+	})
+	t.Run("alerta inexistente -> ErrNoEncontrado", func(t *testing.T) {
+		repo := new(alertaRepoMock)
+		repo.On("BorrarAlerta", 99).Return(false)
+
+		svc := service.NuevoAlertaService(repo)
+		require.ErrorIs(t, svc.Borrar(99), service.ErrNoEncontrado)
+		repo.AssertExpectations(t)
+	})
+}

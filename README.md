@@ -18,10 +18,12 @@ Proyecto de curso **TDI-601 – Aplicaciones Web II**, Semana 11, Actividad C1.
 ## Stack técnico
 
 - **Lenguaje**: Go 1.22+
-- **ORM**: GORM + SQLite pure-Go (`github.com/glebarez/sqlite`) — sin CGO
+- **ORM**: GORM + SQLite (dev/tests) / PostgreSQL 16 (Docker)
 - **Router**: chi v5
-- **Autenticación**: JWT (`golang-jwt/jwt/v5`) + bcrypt
+- **Autenticación**: JWT (`golang-jwt/jwt/v5`) + bcrypt — roles: `veterinario` | `admin`
 - **Tests**: `testing` + `testify` (mock, assert, require) + `httptest`
+- **CI**: GitHub Actions (build → vet → test con cobertura)
+- **Docker**: multi-stage image (~15 MB) + docker-compose con PostgreSQL
 
 ---
 
@@ -76,18 +78,43 @@ codigo-garra-api/
 
 ---
 
-## Ejecutar la API
+## Inicio rápido con Docker
+
+```bash
+# Levanta PostgreSQL + API + seeder automático en un solo comando
+docker-compose up --build
+
+# La API queda disponible en http://localhost:8080
+# Cuentas pre-cargadas por el seeder:
+#   admin@codigogarra.vet / Admin123!   (rol: admin)
+#   vet@codigogarra.vet   / Vet123!    (rol: veterinario)
+```
+
+## Ejecutar en local (SQLite)
 
 ```bash
 go run ./cmd/main.go
-# Servidor en http://localhost:8080
+# Servidor en http://localhost:8080, base de datos: garra.db
 ```
+
+Variables de entorno — copiar `.env.example` a `.env` para personalizar.
 
 ## Ejecutar todos los tests
 
 ```bash
 go test ./...
+# o con cobertura:
+go test ./... -cover
 ```
+
+## Roles y autorización
+
+| Rol | Puede hacer |
+|-----|------------|
+| `veterinario` | GET, POST, PUT en todos los recursos |
+| `admin` | Todo lo anterior + DELETE en todos los recursos |
+
+El rol se incluye en el JWT al hacer login. Los DELETE requieren `rol: admin`.
 
 ---
 
@@ -205,7 +232,10 @@ Todas las rutas protegidas requieren `Authorization: Bearer <token>`.
 | **httptest** | Paquete estándar de Go para probar handlers sin levantar un servidor real. |
 | **:memory:** | DSN de SQLite que abre la base en RAM. Cada test tiene su base aislada. |
 | **401** | Lo genera el middleware `Auth`, nunca el handler. El 401 demuestra que el JWT protege las rutas. |
+| **403** | Lo genera `RequireRol("admin")`. Indica que el token es válido pero el rol es insuficiente. |
 | **AutoMigrate** | GORM crea/actualiza las tablas a partir de los structs. Sin ella el test de repositorio falla en `NotZero(ID)`. |
+| **Has-Many** | `PerfilVeterinario` → `[]RecursoClinico`; `Mascota` → `[]HistorialMedico`. GORM los precarga con `Preload`. |
+| **Belongs-To** | `RecursoClinico` → `PerfilVeterinario`; `HistorialMedico` → `Mascota`; `AsignacionTriage` → `AlertaEmergencia` y `RecursoClinico`. |
 
 ---
 

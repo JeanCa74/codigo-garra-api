@@ -123,13 +123,13 @@ func (a *AlmacenGORM) BorrarAsignacion(id int) bool {
 
 func (a *AlmacenGORM) ListarPerfiles() []models.PerfilVeterinario {
 	var perfiles []models.PerfilVeterinario
-	a.db.Find(&perfiles)
+	a.db.Preload("Recursos").Find(&perfiles)
 	return perfiles
 }
 
 func (a *AlmacenGORM) BuscarPerfilPorID(id int) (models.PerfilVeterinario, bool) {
 	var p models.PerfilVeterinario
-	if err := a.db.First(&p, id).Error; err != nil {
+	if err := a.db.Preload("Recursos").First(&p, id).Error; err != nil {
 		return models.PerfilVeterinario{}, false
 	}
 	return p, true
@@ -203,13 +203,13 @@ func (a *AlmacenGORM) ListarRecursosPorPerfil(perfilID int) []models.RecursoClin
 
 func (a *AlmacenGORM) ListarMascotas() []models.Mascota {
 	var mascotas []models.Mascota
-	a.db.Find(&mascotas)
+	a.db.Preload("Historial").Find(&mascotas)
 	return mascotas
 }
 
 func (a *AlmacenGORM) BuscarMascotaPorID(id int) (models.Mascota, bool) {
 	var m models.Mascota
-	if err := a.db.First(&m, id).Error; err != nil {
+	if err := a.db.Preload("Historial").First(&m, id).Error; err != nil {
 		return models.Mascota{}, false
 	}
 	return m, true

@@ -95,3 +95,93 @@ func TestRecursoService_Crear(t *testing.T) {
 		})
 	}
 }
+
+// TestRecursoService_Listar verifica la delegación al repositorio.
+func TestRecursoService_Listar(t *testing.T) {
+	repo := new(recursoRepoMock)
+	esperado := []models.RecursoClinico{
+		{ID: 1, PerfilID: 2, TipoMaquina: "Ecógrafo", EstaDisponible: true},
+	}
+	repo.On("ListarRecursos").Return(esperado)
+
+	svc := service.NuevoRecursoService(repo)
+	resultado := svc.Listar()
+
+	assert.Equal(t, 1, len(resultado))
+	repo.AssertExpectations(t)
+}
+
+// TestRecursoService_Obtener cubre recurso existente e inexistente.
+func TestRecursoService_Obtener(t *testing.T) {
+	t.Run("recurso existente -> devuelve sin error", func(t *testing.T) {
+		repo := new(recursoRepoMock)
+		recurso := models.RecursoClinico{ID: 1, PerfilID: 2, TipoMaquina: "Ecógrafo", EstaDisponible: true}
+		repo.On("BuscarRecursoPorID", 1).Return(recurso, true)
+
+		svc := service.NuevoRecursoService(repo)
+		resultado, err := svc.Obtener(1)
+
+		require.NoError(t, err)
+		assert.Equal(t, "Ecógrafo", resultado.TipoMaquina)
+		repo.AssertExpectations(t)
+	})
+	t.Run("recurso inexistente -> ErrNoEncontrado", func(t *testing.T) {
+		repo := new(recursoRepoMock)
+		repo.On("BuscarRecursoPorID", 99).Return(models.RecursoClinico{}, false)
+
+		svc := service.NuevoRecursoService(repo)
+		_, err := svc.Obtener(99)
+
+		require.ErrorIs(t, err, service.ErrNoEncontrado)
+		repo.AssertExpectations(t)
+	})
+}
+
+// TestRecursoService_Actualizar cubre actualización exitosa e inexistente.
+func TestRecursoService_Actualizar(t *testing.T) {
+	t.Run("datos validos y recurso existente -> devuelve actualizado", func(t *testing.T) {
+		repo := new(recursoRepoMock)
+		datos := models.RecursoClinico{PerfilID: 1, TipoMaquina: "Ventilador", EstaDisponible: false}
+		actualizado := datos
+		actualizado.ID = 1
+		repo.On("ActualizarRecurso", 1, datos).Return(actualizado, true)
+
+		svc := service.NuevoRecursoService(repo)
+		resultado, err := svc.Actualizar(1, datos)
+
+		require.NoError(t, err)
+		assert.Equal(t, "Ventilador", resultado.TipoMaquina)
+		repo.AssertExpectations(t)
+	})
+	t.Run("recurso inexistente -> ErrNoEncontrado", func(t *testing.T) {
+		repo := new(recursoRepoMock)
+		datos := models.RecursoClinico{PerfilID: 1, TipoMaquina: "Ecógrafo", EstaDisponible: true}
+		repo.On("ActualizarRecurso", 99, datos).Return(models.RecursoClinico{}, false)
+
+		svc := service.NuevoRecursoService(repo)
+		_, err := svc.Actualizar(99, datos)
+
+		require.ErrorIs(t, err, service.ErrNoEncontrado)
+		repo.AssertExpectations(t)
+	})
+}
+
+// TestRecursoService_Borrar cubre eliminación exitosa e inexistente.
+func TestRecursoService_Borrar(t *testing.T) {
+	t.Run("recurso existente -> nil", func(t *testing.T) {
+		repo := new(recursoRepoMock)
+		repo.On("BorrarRecurso", 1).Return(true)
+
+		svc := service.NuevoRecursoService(repo)
+		require.NoError(t, svc.Borrar(1))
+		repo.AssertExpectations(t)
+	})
+	t.Run("recurso inexistente -> ErrNoEncontrado", func(t *testing.T) {
+		repo := new(recursoRepoMock)
+		repo.On("BorrarRecurso", 99).Return(false)
+
+		svc := service.NuevoRecursoService(repo)
+		require.ErrorIs(t, svc.Borrar(99), service.ErrNoEncontrado)
+		repo.AssertExpectations(t)
+	})
+}

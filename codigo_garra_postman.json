@@ -1,0 +1,454 @@
+{
+  "info": {
+    "name": "Código Garra API",
+    "_postman_id": "codigo-garra-api-h3",
+    "description": "Colección completa de la API de emergencias veterinarias — TDI-601 H3",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "tokenVet",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenAdmin",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Registrar veterinario",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nuevo@vet.com\",\n  \"password\": \"Pass123!\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "Login veterinario (guarda token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) pm.collectionVariables.set('tokenVet', json.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"vet@codigogarra.vet\",\n  \"password\": \"Vet123!\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Login admin (guarda token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) pm.collectionVariables.set('tokenAdmin', json.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@codigogarra.vet\",\n  \"password\": \"Admin123!\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "401 sin token",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/alertas"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Módulo 1 — Alertas de Emergencia",
+      "item": [
+        {
+          "name": "Listar alertas",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/alertas"
+          }
+        },
+        {
+          "name": "Crear alerta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{tokenVet}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gravedad\": 5,\n  \"requerimiento\": \"Necesita ventilador mecánico urgente\",\n  \"estado\": \"Buscando\"\n}"
+            },
+            "url": "{{baseUrl}}/alertas"
+          }
+        },
+        {
+          "name": "Obtener alerta por ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/alertas/1"
+          }
+        },
+        {
+          "name": "Actualizar alerta",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{tokenVet}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gravedad\": 5,\n  \"requerimiento\": \"Necesita ventilador mecánico urgente\",\n  \"estado\": \"Atendido\"\n}"
+            },
+            "url": "{{baseUrl}}/alertas/1"
+          }
+        },
+        {
+          "name": "Eliminar alerta (rol admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenAdmin}}"}],
+            "url": "{{baseUrl}}/alertas/1"
+          }
+        },
+        {
+          "name": "403 eliminar sin rol admin",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/alertas/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Módulo 1 — Asignaciones de Triage",
+      "item": [
+        {
+          "name": "Listar asignaciones",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/asignaciones"
+          }
+        },
+        {
+          "name": "Crear asignación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{tokenVet}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alerta_id\": 1,\n  \"recurso_id\": 1,\n  \"estado_confirmacion\": \"Pendiente\"\n}"
+            },
+            "url": "{{baseUrl}}/asignaciones"
+          }
+        },
+        {
+          "name": "Obtener asignación por ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/asignaciones/1"
+          }
+        },
+        {
+          "name": "Actualizar asignación",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{tokenVet}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alerta_id\": 1,\n  \"recurso_id\": 1,\n  \"estado_confirmacion\": \"Confirmado\"\n}"
+            },
+            "url": "{{baseUrl}}/asignaciones/1"
+          }
+        },
+        {
+          "name": "Eliminar asignación (rol admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenAdmin}}"}],
+            "url": "{{baseUrl}}/asignaciones/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Módulo 2 — Perfiles Veterinarios",
+      "item": [
+        {
+          "name": "Listar perfiles (incluye recursos anidados)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/veterinarios"
+          }
+        },
+        {
+          "name": "Crear perfil",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{tokenVet}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Clínica Garra Norte\",\n  \"telefono\": \"+56912345678\",\n  \"direccion\": \"Av. Providencia 1234\",\n  \"activo\": true\n}"
+            },
+            "url": "{{baseUrl}}/veterinarios"
+          }
+        },
+        {
+          "name": "Obtener perfil por ID (con recursos anidados)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/veterinarios/1"
+          }
+        },
+        {
+          "name": "Actualizar perfil",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{tokenVet}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Clínica Garra Norte\",\n  \"telefono\": \"+56912345678\",\n  \"direccion\": \"Av. Providencia 1234\",\n  \"activo\": false\n}"
+            },
+            "url": "{{baseUrl}}/veterinarios/1"
+          }
+        },
+        {
+          "name": "Listar recursos de perfil",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/veterinarios/1/recursos"
+          }
+        },
+        {
+          "name": "Eliminar perfil (rol admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenAdmin}}"}],
+            "url": "{{baseUrl}}/veterinarios/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Módulo 2 — Recursos Clínicos",
+      "item": [
+        {
+          "name": "Listar recursos",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/recursos"
+          }
+        },
+        {
+          "name": "Crear recurso",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{tokenVet}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"perfil_id\": 1,\n  \"tipo_maquina\": \"Ecógrafo portátil\",\n  \"esta_disponible\": true\n}"
+            },
+            "url": "{{baseUrl}}/recursos"
+          }
+        },
+        {
+          "name": "Obtener recurso por ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/recursos/1"
+          }
+        },
+        {
+          "name": "Actualizar recurso",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{tokenVet}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"perfil_id\": 1,\n  \"tipo_maquina\": \"Ecógrafo portátil 4K\",\n  \"esta_disponible\": false\n}"
+            },
+            "url": "{{baseUrl}}/recursos/1"
+          }
+        },
+        {
+          "name": "Eliminar recurso (rol admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenAdmin}}"}],
+            "url": "{{baseUrl}}/recursos/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Módulo 3 — Mascotas",
+      "item": [
+        {
+          "name": "Listar mascotas (incluye historial anidado)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/mascotas"
+          }
+        },
+        {
+          "name": "Crear mascota",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{tokenVet}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Max\",\n  \"especie\": \"Perro\",\n  \"edad\": 3,\n  \"dueno\": \"Ana García\"\n}"
+            },
+            "url": "{{baseUrl}}/mascotas"
+          }
+        },
+        {
+          "name": "Obtener mascota por ID (con historial anidado)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/mascotas/1"
+          }
+        },
+        {
+          "name": "Actualizar mascota",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{tokenVet}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Max\",\n  \"especie\": \"Perro\",\n  \"edad\": 4,\n  \"dueno\": \"Ana García\"\n}"
+            },
+            "url": "{{baseUrl}}/mascotas/1"
+          }
+        },
+        {
+          "name": "Listar historial de mascota",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/mascotas/1/historial"
+          }
+        },
+        {
+          "name": "Eliminar mascota (rol admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenAdmin}}"}],
+            "url": "{{baseUrl}}/mascotas/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Módulo 3 — Historial Médico",
+      "item": [
+        {
+          "name": "Listar historial",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/historial"
+          }
+        },
+        {
+          "name": "Crear entrada de historial",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{tokenVet}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascota_id\": 1,\n  \"diagnostico\": \"Fractura en pata delantera\",\n  \"tratamiento\": \"Inmovilización y analgésicos\",\n  \"fecha\": \"2026-07-09\",\n  \"veterinario\": \"Dra. Pérez\"\n}"
+            },
+            "url": "{{baseUrl}}/historial"
+          }
+        },
+        {
+          "name": "Obtener entrada por ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{tokenVet}}"}],
+            "url": "{{baseUrl}}/historial/1"
+          }
+        }
+      ]
+    }
+  ]
+}

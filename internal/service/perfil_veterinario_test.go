@@ -105,3 +105,93 @@ func TestPerfilVeterinarioService_Crear(t *testing.T) {
 		})
 	}
 }
+
+// TestPerfilVeterinarioService_Listar verifica la delegación correcta al repositorio.
+func TestPerfilVeterinarioService_Listar(t *testing.T) {
+	repo := new(perfilRepoMock)
+	esperado := []models.PerfilVeterinario{
+		{ID: 1, Nombre: "Clínica Garra Norte", Telefono: "0987654321", Activo: true},
+	}
+	repo.On("ListarPerfiles").Return(esperado)
+
+	svc := service.NuevoPerfilVeterinarioService(repo)
+	resultado := svc.Listar()
+
+	assert.Equal(t, 1, len(resultado))
+	repo.AssertExpectations(t)
+}
+
+// TestPerfilVeterinarioService_Obtener cubre perfil existente e inexistente.
+func TestPerfilVeterinarioService_Obtener(t *testing.T) {
+	t.Run("perfil existente -> devuelve perfil sin error", func(t *testing.T) {
+		repo := new(perfilRepoMock)
+		perfil := models.PerfilVeterinario{ID: 1, Nombre: "Clínica Garra Norte", Telefono: "0987654321"}
+		repo.On("BuscarPerfilPorID", 1).Return(perfil, true)
+
+		svc := service.NuevoPerfilVeterinarioService(repo)
+		resultado, err := svc.Obtener(1)
+
+		require.NoError(t, err)
+		assert.Equal(t, perfil.Nombre, resultado.Nombre)
+		repo.AssertExpectations(t)
+	})
+	t.Run("perfil inexistente -> ErrNoEncontrado", func(t *testing.T) {
+		repo := new(perfilRepoMock)
+		repo.On("BuscarPerfilPorID", 99).Return(models.PerfilVeterinario{}, false)
+
+		svc := service.NuevoPerfilVeterinarioService(repo)
+		_, err := svc.Obtener(99)
+
+		require.ErrorIs(t, err, service.ErrNoEncontrado)
+		repo.AssertExpectations(t)
+	})
+}
+
+// TestPerfilVeterinarioService_Actualizar cubre actualización exitosa e inexistente.
+func TestPerfilVeterinarioService_Actualizar(t *testing.T) {
+	t.Run("datos validos y perfil existente -> devuelve actualizado", func(t *testing.T) {
+		repo := new(perfilRepoMock)
+		datos := models.PerfilVeterinario{Nombre: "Clínica Garra Sur", Telefono: "0911111111", Activo: false}
+		actualizado := datos
+		actualizado.ID = 1
+		repo.On("ActualizarPerfil", 1, datos).Return(actualizado, true)
+
+		svc := service.NuevoPerfilVeterinarioService(repo)
+		resultado, err := svc.Actualizar(1, datos)
+
+		require.NoError(t, err)
+		assert.Equal(t, "Clínica Garra Sur", resultado.Nombre)
+		repo.AssertExpectations(t)
+	})
+	t.Run("perfil inexistente -> ErrNoEncontrado", func(t *testing.T) {
+		repo := new(perfilRepoMock)
+		datos := models.PerfilVeterinario{Nombre: "Clínica X", Telefono: "000"}
+		repo.On("ActualizarPerfil", 99, datos).Return(models.PerfilVeterinario{}, false)
+
+		svc := service.NuevoPerfilVeterinarioService(repo)
+		_, err := svc.Actualizar(99, datos)
+
+		require.ErrorIs(t, err, service.ErrNoEncontrado)
+		repo.AssertExpectations(t)
+	})
+}
+
+// TestPerfilVeterinarioService_Borrar cubre eliminación exitosa e inexistente.
+func TestPerfilVeterinarioService_Borrar(t *testing.T) {
+	t.Run("perfil existente -> nil", func(t *testing.T) {
+		repo := new(perfilRepoMock)
+		repo.On("BorrarPerfil", 1).Return(true)
+
+		svc := service.NuevoPerfilVeterinarioService(repo)
+		require.NoError(t, svc.Borrar(1))
+		repo.AssertExpectations(t)
+	})
+	t.Run("perfil inexistente -> ErrNoEncontrado", func(t *testing.T) {
+		repo := new(perfilRepoMock)
+		repo.On("BorrarPerfil", 99).Return(false)
+
+		svc := service.NuevoPerfilVeterinarioService(repo)
+		require.ErrorIs(t, svc.Borrar(99), service.ErrNoEncontrado)
+		repo.AssertExpectations(t)
+	})
+}

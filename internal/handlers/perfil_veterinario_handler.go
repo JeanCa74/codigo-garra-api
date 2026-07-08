@@ -83,3 +83,5 @@ func (s *Server) ListarRecursosDePerfil(w http.ResponseWriter, r *http.Request) 
 	}
 	RespondJSON(w, http.StatusOK, s.deps.Recursos.ListarPorPerfil(id))
 }
+
+//hola nuevo comentario de prueba

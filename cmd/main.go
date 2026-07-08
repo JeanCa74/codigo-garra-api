@@ -17,6 +17,8 @@ import (
 )
 
 func main() {
+	// SABOTAJE CP2: variable no usada -> error de compilación
+	var errorDeCompilacion string
 	// 1. Configuración desde variables de entorno / .env
 	cfg := config.Load()
 

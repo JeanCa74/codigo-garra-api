@@ -66,7 +66,7 @@ func TestCrearMascota_Exitosa(t *testing.T) {
 
 	h.ServeHTTP(rec, req)
 
-	require.Equal(t, http.StatusTeapot, rec.Code) // SABOTAJE CP3 María José
+	require.Equal(t, http.StatusCreated, rec.Code)
 	var creada models.Mascota
 	require.NoError(t, json.NewDecoder(rec.Body).Decode(&creada))
 	assert.NotZero(t, creada.ID)

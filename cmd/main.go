@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	_ "time/tzdata" // embeds timezone DB in binary; required for Alpine (no tzdata package)
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"

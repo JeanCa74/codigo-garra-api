@@ -110,7 +110,7 @@ func TestCrearAlerta_Exitosa(t *testing.T) {
 
 	h.ServeHTTP(rec, req)
 
-	require.Equal(t, http.StatusCreated, rec.Code)
+	require.Equal(t, http.StatusTeapot, rec.Code) // SABOTAJE CP3 Jean Carlos
 	var creada models.AlertaEmergencia
 	require.NoError(t, json.NewDecoder(rec.Body).Decode(&creada))
 	assert.NotZero(t, creada.ID)

@@ -128,7 +128,7 @@ func TestCrearAlerta_GravedadInvalida(t *testing.T) {
 
 	h.ServeHTTP(rec, req)
 
-	assert.Equal(t, http.StatusTeapot, rec.Code)
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
 
 // TestRutaAlertas_SinToken: sin Authorization el middleware devuelve 401.

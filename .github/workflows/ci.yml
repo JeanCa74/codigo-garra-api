@@ -28,3 +28,13 @@ jobs:
 
       - name: Resumen de cobertura
         run: go tool cover -func=coverage.out
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: verificar
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Construir imagen
+        run: docker build -t codigo-garra-api:ci .

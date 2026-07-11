@@ -15,6 +15,7 @@ import (
 	"github.com/JeanCa74/codigo-garra-api/internal/seed"
 	"github.com/JeanCa74/codigo-garra-api/internal/service"
 	"github.com/JeanCa74/codigo-garra-api/internal/storage"
+	"github.com/JeanCa74/codigo-garra-api/internal/web"
 )
 
 func main() {
@@ -117,6 +118,10 @@ func main() {
 			})
 		})
 	})
+
+	// 8. Interfaz web de demostración (SPA embebida en el binario con go:embed).
+	//    Se sirve en "/" y consume la API por el mismo origen (sin CORS extra).
+	r.Handle("/*", web.Handler())
 
 	log.Printf("Código Garra API corriendo en http://localhost%s", cfg.Port)
 	log.Fatal(http.ListenAndServe(cfg.Port, r))

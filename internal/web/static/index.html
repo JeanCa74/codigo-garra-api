@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- CSP estricta: solo recursos del propio servidor, sin scripts inline ni externos -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-ancestors 'none'">
+  <title>Código Garra — Emergencias Veterinarias</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ══════════ Vista: Login / Registro ══════════ -->
+  <div id="vista-login" class="oculto">
+    <div class="login-fondo">
+      <div class="login-card">
+        <div class="login-logo">🐾</div>
+        <h1>Código Garra</h1>
+        <p class="login-subtitulo">Plataforma de emergencias veterinarias</p>
+
+        <div id="login-aviso" class="aviso oculto"></div>
+
+        <form id="form-login" autocomplete="on">
+          <label for="login-email">Correo electrónico</label>
+          <input id="login-email" type="email" required autocomplete="username"
+                 placeholder="usuario@codigogarra.vet">
+
+          <label for="login-password">Contraseña</label>
+          <input id="login-password" type="password" required minlength="6"
+                 autocomplete="current-password" placeholder="••••••••">
+
+          <button type="submit" class="btn btn-primario btn-bloque" id="btn-login">Ingresar</button>
+        </form>
+
+        <p class="login-alternar">
+          <span id="texto-alternar">¿No tienes cuenta?</span>
+          <button type="button" class="btn-enlace" id="btn-alternar">Regístrate</button>
+        </p>
+
+        <div class="login-demo">
+          <p>Cuentas de demostración (seeder):</p>
+          <div class="login-demo-botones">
+            <button type="button" class="btn btn-suave" id="btn-demo-admin">👑 Admin</button>
+            <button type="button" class="btn btn-suave" id="btn-demo-vet">🩺 Veterinario</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ Vista: Aplicación ══════════ -->
+  <div id="vista-app" class="oculto">
+    <header class="topbar">
+      <div class="topbar-marca">🐾 <strong>Código Garra</strong></div>
+      <div class="topbar-usuario">
+        <span id="usuario-email"></span>
+        <span id="usuario-rol" class="badge"></span>
+        <button type="button" class="btn btn-suave" id="btn-salir">Salir</button>
+      </div>
+    </header>
+
+    <nav class="pestanas" id="pestanas"></nav>
+
+    <main id="contenido" class="contenido"></main>
+  </div>
+
+  <div id="toast" class="toast oculto"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

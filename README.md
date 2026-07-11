@@ -70,9 +70,12 @@ codigo-garra-api/
 │   │   ├── recurso_handler.go / recurso_handler_test.go
 │   │   ├── mascota_handler.go
 │   │   └── historial_medico_handler.go / historial_medico_handler_test.go
-│   └── middleware/
-│       ├── auth.go             — JWT Bearer → 401
-│       └── cors.go
+│   ├── middleware/
+│   │   ├── auth.go             — JWT Bearer → 401
+│   │   └── cors.go
+│   └── web/
+│       ├── web.go              — sirve la interfaz web embebida (go:embed)
+│       └── static/             — SPA de demostración (index.html, app.js, styles.css)
 └── go.mod
 ```
 
@@ -98,6 +101,29 @@ go run ./cmd/main.go
 ```
 
 Variables de entorno — copiar `.env.example` a `.env` para personalizar.
+
+## Interfaz web de demostración
+
+Al levantar el servidor, la raíz `http://localhost:8080/` sirve una **SPA de
+demostración** (HTML/CSS/JS puro, sin dependencias ni build) que consume la
+propia API y permite ver cómo podría lucir la aplicación:
+
+- **Login / registro** con las cuentas del seeder (botones de acceso rápido
+  «Admin» y «Veterinario» en la pantalla de inicio).
+- **Panel** con estadísticas en vivo (alertas activas, mascotas, clínicas,
+  recursos disponibles) y lista de emergencias críticas (gravedad 4-5).
+- **Pestañas CRUD** para los tres módulos: Alertas, Asignaciones, Clínicas,
+  Recursos, Mascotas e Historial — con edición de estados en línea.
+
+Decisiones de seguridad del front end:
+
+| Medida | Detalle |
+|---|---|
+| Mismo origen | La SPA se embebe en el binario con `go:embed` y se sirve desde la API — sin CORS abierto ni servidor extra. |
+| CSP estricta | `default-src 'self'; frame-ancestors 'none'` — sin scripts inline ni recursos externos, y no se puede embeber en iframes. |
+| Anti-XSS | Todo dato de la API se pinta con `textContent`, nunca con `innerHTML`. |
+| Token | El JWT vive en `sessionStorage` (se borra al cerrar la pestaña) y ante un `401` la sesión se cierra sola. |
+| Roles | Los botones de eliminar solo se muestran al rol `admin`; el servidor sigue validando con `RequireRol` (403). La UI acompaña, nunca reemplaza, la autorización del backend. |
 
 ## Ejecutar todos los tests
 

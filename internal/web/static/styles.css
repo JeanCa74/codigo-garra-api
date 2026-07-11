@@ -1,0 +1,320 @@
+/* ══════════ Código Garra — estilos de la interfaz de demostración ══════════ */
+
+:root {
+  --primario: #0f766e;
+  --primario-oscuro: #115e59;
+  --primario-suave: #ccfbf1;
+  --fondo: #f1f5f9;
+  --tarjeta: #ffffff;
+  --texto: #0f172a;
+  --texto-suave: #64748b;
+  --borde: #e2e8f0;
+  --peligro: #dc2626;
+  --peligro-suave: #fee2e2;
+  --exito: #16a34a;
+  --exito-suave: #dcfce7;
+  --alerta: #d97706;
+  --alerta-suave: #fef3c7;
+  --info-suave: #dbeafe;
+  --info: #2563eb;
+  --radio: 12px;
+  --sombra: 0 1px 3px rgba(15, 23, 42, .08), 0 4px 16px rgba(15, 23, 42, .06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+  min-height: 100vh;
+}
+
+.oculto { display: none !important; }
+
+/* ══════════ Login ══════════ */
+
+.login-fondo {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #0f766e 0%, #134e4a 60%, #0f172a 100%);
+}
+
+.login-card {
+  background: var(--tarjeta);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-logo { font-size: 44px; }
+
+.login-card h1 { font-size: 26px; margin-top: 6px; }
+
+.login-subtitulo { color: var(--texto-suave); font-size: 14px; margin: 4px 0 20px; }
+
+.login-card form { text-align: left; }
+
+.login-card label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 14px 0 4px;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.login-card input:focus { outline: 2px solid var(--primario); border-color: transparent; }
+
+.login-alternar { margin-top: 16px; font-size: 13px; color: var(--texto-suave); }
+
+.btn-enlace {
+  background: none;
+  border: none;
+  color: var(--primario);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: underline;
+}
+
+.login-demo {
+  margin-top: 22px;
+  border-top: 1px dashed var(--borde);
+  padding-top: 16px;
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.login-demo-botones { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
+
+.aviso {
+  background: var(--alerta-suave);
+  color: #92400e;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.aviso.error { background: var(--peligro-suave); color: #991b1b; }
+
+/* ══════════ Botones ══════════ */
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter .15s, transform .05s;
+}
+
+.btn:hover { filter: brightness(1.08); }
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .6; cursor: wait; }
+
+.btn-primario { background: var(--primario); color: #fff; }
+.btn-suave { background: var(--fondo); color: var(--texto); border: 1px solid var(--borde); }
+.btn-peligro { background: var(--peligro-suave); color: var(--peligro); }
+.btn-bloque { width: 100%; margin-top: 20px; }
+.btn-mini { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+
+/* ══════════ Barra superior ══════════ */
+
+.topbar {
+  background: var(--tarjeta);
+  border-bottom: 1px solid var(--borde);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar-marca { font-size: 18px; }
+
+.topbar-usuario { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--texto-suave); flex-wrap: wrap; }
+
+/* ══════════ Pestañas ══════════ */
+
+.pestanas {
+  display: flex;
+  gap: 6px;
+  padding: 14px 24px 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.pestana {
+  border: 1px solid var(--borde);
+  background: var(--tarjeta);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  cursor: pointer;
+}
+
+.pestana.activa { background: var(--primario); border-color: var(--primario); color: #fff; }
+
+/* ══════════ Contenido ══════════ */
+
+.contenido { max-width: 1200px; margin: 0 auto; padding: 20px 24px 60px; }
+
+.tarjeta {
+  background: var(--tarjeta);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.tarjeta h2 { font-size: 17px; margin-bottom: 4px; }
+.tarjeta .descripcion { font-size: 13px; color: var(--texto-suave); margin-bottom: 14px; }
+
+/* Panel de estadísticas */
+
+.estadisticas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  background: var(--tarjeta);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 18px;
+}
+
+.stat .stat-valor { font-size: 30px; font-weight: 800; }
+.stat .stat-nombre { font-size: 13px; color: var(--texto-suave); margin-top: 2px; }
+.stat.rojo .stat-valor { color: var(--peligro); }
+.stat.verde .stat-valor { color: var(--exito); }
+.stat.azul .stat-valor { color: var(--info); }
+.stat.teal .stat-valor { color: var(--primario); }
+
+/* Formularios en fila */
+
+.formulario {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.campo label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--texto-suave); }
+
+.campo input, .campo select {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.campo input:focus, .campo select:focus { outline: 2px solid var(--primario); border-color: transparent; }
+
+.campo-check { display: flex; align-items: center; gap: 8px; padding-bottom: 10px; font-size: 13px; }
+
+/* ══════════ Tablas ══════════ */
+
+.tabla-scroll { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+th {
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--texto-suave);
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--borde);
+  white-space: nowrap;
+}
+
+td { padding: 10px 12px; border-bottom: 1px solid var(--borde); vertical-align: middle; }
+
+tr:hover td { background: #f8fafc; }
+
+td select {
+  padding: 5px 8px;
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+}
+
+.vacio { text-align: center; color: var(--texto-suave); padding: 26px !important; font-style: italic; }
+
+/* ══════════ Badges ══════════ */
+
+.badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge-admin { background: #fde68a; color: #92400e; }
+.badge-veterinario { background: var(--primario-suave); color: var(--primario-oscuro); }
+.badge-verde { background: var(--exito-suave); color: #166534; }
+.badge-rojo { background: var(--peligro-suave); color: #991b1b; }
+.badge-amarillo { background: var(--alerta-suave); color: #92400e; }
+.badge-azul { background: var(--info-suave); color: #1e40af; }
+.badge-gris { background: var(--borde); color: var(--texto-suave); }
+
+/* Gravedad 1-5 */
+.grav { display: inline-block; min-width: 34px; text-align: center; border-radius: 8px; padding: 4px 8px; font-weight: 800; font-size: 13px; }
+.grav-1, .grav-2 { background: var(--exito-suave); color: #166534; }
+.grav-3 { background: var(--alerta-suave); color: #92400e; }
+.grav-4 { background: #ffedd5; color: #9a3412; }
+.grav-5 { background: var(--peligro-suave); color: #991b1b; }
+
+/* ══════════ Toast ══════════ */
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--texto);
+  color: #fff;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+  z-index: 100;
+  max-width: 90vw;
+}
+
+.toast.error { background: var(--peligro); }
+.toast.exito { background: var(--exito); }
+
+@media (max-width: 640px) {
+  .contenido, .pestanas { padding-left: 12px; padding-right: 12px; }
+  .topbar { padding: 10px 12px; }
+}

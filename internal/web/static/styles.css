@@ -90,6 +90,19 @@ body {
   text-decoration: underline;
 }
 
+.login-card .login-recordar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--texto-suave);
+  cursor: pointer;
+}
+
+.login-card .login-recordar input { width: auto; }
+
 .login-demo {
   margin-top: 22px;
   border-top: 1px dashed var(--borde);
@@ -171,6 +184,9 @@ body {
   font-weight: 600;
   color: var(--texto-suave);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .pestana.activa { background: var(--primario); border-color: var(--primario); color: #fff; }
@@ -314,7 +330,92 @@ td select {
 .toast.error { background: var(--peligro); }
 .toast.exito { background: var(--exito); }
 
-@media (max-width: 640px) {
-  .contenido, .pestanas { padding-left: 12px; padding-right: 12px; }
+/* ══════════ Versión móvil (función principal para los usuarios) ══════════ */
+
+@media (max-width: 700px) {
   .topbar { padding: 10px 12px; }
+  .topbar-marca { font-size: 16px; white-space: nowrap; }
+  .topbar-usuario { flex-wrap: nowrap; }
+  /* En pantallas pequeñas basta el badge de rol; el email completo se ve al iniciar sesión */
+  #usuario-email { display: none; }
+
+  .estadisticas { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .stat { padding: 14px; }
+  .stat .stat-valor { font-size: 24px; }
+  .stat .stat-nombre { font-size: 12px; }
+
+  /* Las pestañas se convierten en barra de navegación inferior táctil */
+  .pestanas {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    margin: 0;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    background: var(--tarjeta);
+    border-top: 1px solid var(--borde);
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, .08);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .pestanas::-webkit-scrollbar { display: none; }
+
+  .pestana {
+    flex-direction: column;
+    gap: 2px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    padding: 6px 10px;
+    min-width: 64px;
+    flex-shrink: 0;
+    align-items: center;
+  }
+  .pestana-icono { font-size: 20px; }
+  .pestana-nombre { font-size: 10px; }
+  .pestana.activa { background: var(--primario-suave); color: var(--primario-oscuro); }
+
+  .contenido { padding: 14px 12px calc(96px + env(safe-area-inset-bottom)); }
+  .toast { bottom: calc(88px + env(safe-area-inset-bottom)); }
+
+  /* Formularios en una sola columna; 16px evita el zoom automático de iOS */
+  .formulario { grid-template-columns: 1fr; }
+  .campo input, .campo select, .login-card input { font-size: 16px; }
+  .btn { padding: 12px 16px; }
+  .btn-mini { padding: 8px 12px; }
+
+  /* Las tablas se transforman en tarjetas apiladas */
+  table, tbody, tr, td { display: block; width: 100%; }
+  thead { display: none; }
+  tr {
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    padding: 6px 12px;
+    background: #fff;
+  }
+  tr:hover td { background: transparent; }
+  td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--fondo);
+    padding: 8px 0;
+  }
+  td:last-child { border-bottom: none; }
+  td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--texto-suave);
+    flex-shrink: 0;
+  }
+  td.vacio { justify-content: center; }
+  td.vacio::before { content: none; }
 }

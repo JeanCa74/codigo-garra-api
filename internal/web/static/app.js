@@ -78,20 +78,25 @@ function decodificarJWT(t) {
   }
 }
 
-function guardarSesion(t) {
+// "recordar" decide dónde vive el token:
+//  - sessionStorage (defecto): se borra al cerrar la pestaña — más seguro.
+//  - localStorage (Recordarme): persiste entre aperturas de la app instalada,
+//    con expiración validada en el cliente (exp) y en el servidor (401).
+function guardarSesion(t, recordar) {
   const claims = decodificarJWT(t);
   if (!claims) throw new Error('token inválido');
   token = t;
   usuario = { email: claims.sub, rol: claims.rol, exp: claims.exp };
-  sessionStorage.setItem(CLAVE_TOKEN, t);
+  (recordar ? localStorage : sessionStorage).setItem(CLAVE_TOKEN, t);
 }
 
 function restaurarSesion() {
-  const t = sessionStorage.getItem(CLAVE_TOKEN);
+  const t = sessionStorage.getItem(CLAVE_TOKEN) || localStorage.getItem(CLAVE_TOKEN);
   if (!t) return false;
   const claims = decodificarJWT(t);
   if (!claims || (claims.exp && claims.exp * 1000 < Date.now())) {
     sessionStorage.removeItem(CLAVE_TOKEN);
+    localStorage.removeItem(CLAVE_TOKEN);
     return false;
   }
   token = t;
@@ -103,6 +108,7 @@ function cerrarSesion(mensaje) {
   token = null;
   usuario = null;
   sessionStorage.removeItem(CLAVE_TOKEN);
+  localStorage.removeItem(CLAVE_TOKEN);
   mostrarLogin(mensaje);
 }
 
@@ -136,21 +142,23 @@ function mostrarApp() {
 /* ══════════ Pestañas ══════════ */
 
 const PESTANAS = [
-  { id: 'panel',        nombre: '📊 Panel' },
-  { id: 'alertas',      nombre: '🚨 Alertas' },
-  { id: 'asignaciones', nombre: '🩹 Asignaciones' },
-  { id: 'clinicas',     nombre: '🏥 Clínicas' },
-  { id: 'recursos',     nombre: '⚙️ Recursos' },
-  { id: 'mascotas',     nombre: '🐶 Mascotas' },
-  { id: 'historial',    nombre: '📋 Historial' },
+  { id: 'panel',        icono: '📊', nombre: 'Panel' },
+  { id: 'alertas',      icono: '🚨', nombre: 'Alertas' },
+  { id: 'asignaciones', icono: '🩹', nombre: 'Triage' },
+  { id: 'clinicas',     icono: '🏥', nombre: 'Clínicas' },
+  { id: 'recursos',     icono: '⚙️', nombre: 'Recursos' },
+  { id: 'mascotas',     icono: '🐶', nombre: 'Mascotas' },
+  { id: 'historial',    icono: '📋', nombre: 'Historial' },
 ];
 
 function pintarPestanas() {
   const nav = $('#pestanas');
   limpiar(nav);
   for (const p of PESTANAS) {
-    const btn = el('button', 'pestana' + (p.id === pestanaActiva ? ' activa' : ''), p.nombre);
+    const btn = el('button', 'pestana' + (p.id === pestanaActiva ? ' activa' : ''));
     btn.type = 'button';
+    btn.appendChild(el('span', 'pestana-icono', p.icono));
+    btn.appendChild(el('span', 'pestana-nombre', p.nombre));
     btn.addEventListener('click', () => irAPestana(p.id));
     nav.appendChild(btn);
   }
@@ -254,12 +262,13 @@ function tabla(cabeceras, filas, mensajeVacio) {
   }
   for (const fila of filas) {
     const tr = el('tr');
-    for (const celda of fila) {
+    fila.forEach((celda, i) => {
       const td = el('td');
+      td.dataset.label = cabeceras[i] || ''; // en móvil la tabla se ve como tarjetas
       if (celda instanceof Node) td.appendChild(celda);
       else td.textContent = celda === undefined || celda === null ? '—' : String(celda);
       tr.appendChild(td);
-    }
+    });
     tbody.appendChild(tr);
   }
   t.appendChild(tbody);
@@ -737,7 +746,7 @@ async function enviarLogin(e) {
       toast('Cuenta creada, iniciando sesión…', 'exito');
     }
     const resp = await api('/auth/login', { method: 'POST', body: { email, password } });
-    guardarSesion(resp.token);
+    guardarSesion(resp.token, $('#login-recordar').checked);
     $('#login-password').value = '';
     mostrarApp();
   } catch (err) {
@@ -755,9 +764,40 @@ function rellenarDemo(email, password) {
   if (modoRegistro) alternarModo();
 }
 
+/* ══════════ PWA: service worker e instalación ══════════ */
+
+function registrarPWA() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* opcional: la app funciona igual sin SW */ });
+  }
+
+  let eventoInstalar = null;
+  const botones = document.querySelectorAll('.btn-instalar');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    eventoInstalar = e;
+    botones.forEach((b) => b.classList.remove('oculto'));
+  });
+
+  botones.forEach((b) => b.addEventListener('click', async () => {
+    if (!eventoInstalar) return;
+    eventoInstalar.prompt();
+    await eventoInstalar.userChoice;
+    eventoInstalar = null;
+    botones.forEach((x) => x.classList.add('oculto'));
+  }));
+
+  window.addEventListener('appinstalled', () => {
+    botones.forEach((b) => b.classList.add('oculto'));
+    toast('Aplicación instalada 🎉', 'exito');
+  });
+}
+
 /* ══════════ Arranque ══════════ */
 
 document.addEventListener('DOMContentLoaded', () => {
+  registrarPWA();
   $('#form-login').addEventListener('submit', enviarLogin);
   $('#btn-alternar').addEventListener('click', alternarModo);
   $('#btn-salir').addEventListener('click', () => cerrarSesion());

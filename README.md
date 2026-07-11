@@ -125,6 +125,39 @@ Decisiones de seguridad del front end:
 | Token | El JWT vive en `sessionStorage` (se borra al cerrar la pestaña) y ante un `401` la sesión se cierra sola. |
 | Roles | Los botones de eliminar solo se muestran al rol `admin`; el servidor sigue validando con `RequireRol` (403). La UI acompaña, nunca reemplaza, la autorización del backend. |
 
+## Aplicación móvil (PWA) — la vía principal de los usuarios
+
+La misma interfaz es una **Progressive Web App instalable**: al abrir
+`http://<servidor>:8080/` desde el teléfono, el navegador ofrece
+«Agregar a pantalla de inicio» (o el botón «📲 Instalar aplicación» del
+login) y la app queda instalada con su propio ícono, pantalla completa
+y arranque offline.
+
+Experiencia móvil:
+
+- **Barra de navegación inferior** táctil con las 7 secciones (patrón
+  estándar de apps nativas).
+- **Tablas convertidas en tarjetas** apiladas: cada registro se lee como
+  una ficha, sin scroll horizontal.
+- **Formularios en una columna** con inputs de 16px (evita el zoom
+  automático de iOS) y botones de tamaño táctil.
+- **«Recordarme en este dispositivo»**: por defecto el token vive en
+  `sessionStorage` (más seguro); si el usuario lo marca, pasa a
+  `localStorage` para que la app instalada no pida login en cada
+  apertura. En ambos casos expira a las 24 h (claim `exp`) y ante
+  cualquier `401` la sesión se cierra sola.
+
+Seguridad del service worker (`sw.js`):
+
+- Solo cachea el *app shell* (HTML/CSS/JS/íconos) con estrategia
+  red-primero, para abrir sin conexión.
+- **Las peticiones a `/api/` nunca se interceptan ni cachean** — los
+  datos autenticados jamás quedan almacenados en el dispositivo.
+
+Archivos involucrados: `manifest.webmanifest` (nombre, colores, íconos
+`any` + `maskable`), `sw.js` (service worker) e `icon-*.png`, todos
+embebidos en el binario junto al resto de la SPA.
+
 ## Ejecutar todos los tests
 
 ```bash

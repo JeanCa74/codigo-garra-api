@@ -5,7 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- CSP estricta: solo recursos del propio servidor, sin scripts inline ni externos -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; frame-ancestors 'none'">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="description" content="Reporta y gestiona emergencias veterinarias desde tu teléfono">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Código Garra">
   <title>Código Garra — Emergencias Veterinarias</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -29,8 +38,15 @@
           <input id="login-password" type="password" required minlength="6"
                  autocomplete="current-password" placeholder="••••••••">
 
+          <label class="campo-check login-recordar">
+            <input id="login-recordar" type="checkbox">
+            <span>Recordarme en este dispositivo</span>
+          </label>
+
           <button type="submit" class="btn btn-primario btn-bloque" id="btn-login">Ingresar</button>
         </form>
+
+        <button type="button" class="btn btn-suave btn-bloque oculto btn-instalar">📲 Instalar aplicación</button>
 
         <p class="login-alternar">
           <span id="texto-alternar">¿No tienes cuenta?</span>
@@ -55,6 +71,7 @@
       <div class="topbar-usuario">
         <span id="usuario-email"></span>
         <span id="usuario-rol" class="badge"></span>
+        <button type="button" class="btn btn-suave oculto btn-instalar">📲 Instalar</button>
         <button type="button" class="btn btn-suave" id="btn-salir">Salir</button>
       </div>
     </header>
